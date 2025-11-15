@@ -188,6 +188,7 @@ function Confi() {
       if (!res.ok) throw new Error(await res.text())
       // limpiar sesión y redirigir
       localStorage.removeItem('user')
+      window.dispatchEvent(new Event('userChange'))
       setUser(null)
       alert('Cuenta eliminada')
       navigate('/')
@@ -198,7 +199,7 @@ function Confi() {
 
   const cerrarSesion = () => {
     localStorage.removeItem('user')
-    window.dispatchEvent(new Event('userChange')) 
+    window.dispatchEvent(new Event('userChange'))
     setUser(null)
     setNombre('')
     setEmail('')
@@ -350,6 +351,8 @@ function Confi() {
             </div>
           ))}
         </div>
+
+        
       </section>
 
       <section className="confi-cuenta">
@@ -390,7 +393,7 @@ function Confi() {
         {logros.length > 0 ? (
           logros.map((logro) => (
             <div
-              key={logro._id || logro.id || logro.nombre} 
+              key={logro._id || logro.id || logro.nombre}
               className={`item-logro ${
                 logro.desbloqueado ? 'activo' : 'bloqueado'
               }`}

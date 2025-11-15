@@ -1,10 +1,10 @@
-/*--------GENERAL----------*/
+/*------------------------GENERAL------------------------------*/
 .foro {
   display: grid;
   grid-template-columns: 3fr 1fr;
 }
 
-/*--------NOTICIAS----------*/
+/*-----------------------NOTICIAS------------------------------*/
 .notice {
   display: flex;
   flex-direction: column;
@@ -120,7 +120,7 @@
   color: var(--color-text-muted);
 }
 
-/* --- LISTA RESEÑAS --- */
+/* ----------------- LISTA RESEÑAS ------------------------- */
 .lista-reseñas-container {
   max-width: 100%;
   align-content: flex-start;
@@ -148,7 +148,25 @@
   opacity: 0.8;
 }
 
-/*--------------FILTRO--------------------- */
+.btn-amigo {
+  display: flex;
+  flex-direction: row;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-amigo img {
+  width: 30px;
+  height: 30px;
+  margin-left: 1px;
+}
+
+.btn-amigo:hover {
+  border-bottom: 1px solid var(--color-text-hover);
+}
+
+/*------------------FILTRO--------------------- */
 .lista-reseñas-filtro {
   margin-bottom: 30px;
   padding: 15px;
@@ -431,7 +449,7 @@
 }
 
 @media (max-width: 900px) {
-  .foro{
+  .foro {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;

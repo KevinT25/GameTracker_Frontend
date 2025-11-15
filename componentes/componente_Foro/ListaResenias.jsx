@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Loader from '../componente_General/Loading'
-import tiempoCarga3 from './../../../assets/loadingGif/tiempoCarga3.gif'
 import Respuesta from './Respuesta'
+import tiempoCarga3 from './../../../assets/loadingGif/tiempoCarga3.gif'
+import iconAgregarAmigo from '../../../assets/Icons/iconAgregarAmigo.png'
+
 
 function ListaResenias() {
   const [reseñas, setReseñas] = useState([])
@@ -29,6 +31,47 @@ function ListaResenias() {
       })
       .finally(() => clearTimeout(timeout))
   }, [])
+
+  // Agregar amigos
+  async function agregarAmigo(usuarioId, amigoId) {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/dataUser/usuario/${usuarioId}/anadir-amigo/${amigoId}`,
+        { method: 'POST' }
+      )
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert(`Amigo agregado: total amigos ${data.cantidadamigos}`)
+        return data.amigos
+      } else {
+        alert(`Error: ${data.message}`)
+      }
+    } catch (error) {
+      alert(`Error: ${error.message}`)
+    }
+  }
+
+  // Función auxiliar para usar en el botón
+  const Amigo = (amigoId) => {
+    const storedUser = localStorage.getItem('user')
+    if (!storedUser) {
+      alert('Debes iniciar sesión para agregar amigos.')
+      navigate('/perfil')
+      return
+    }
+
+    const usuario = JSON.parse(storedUser)
+    const usuarioId = usuario._id || usuario.id
+
+    if (!amigoId) {
+      alert('No se pudo identificar al usuario a agregar.')
+      return
+    }
+
+    agregarAmigo(usuarioId, amigoId)
+  }
 
   // Abrir modal de respuesta
   const abrirModal = (resenia) => {
@@ -78,8 +121,10 @@ function ListaResenias() {
   }
 
   // Filtrar reseñas por nombre del juego
-  const reseñasFiltradas = reseñas.filter((r) =>
-    r.juegoId?.titulo?.toLowerCase().includes(filtro.toLowerCase())
+  const reseñasFiltradas = reseñas.filter(
+    (r) =>
+      r.juegoId?.titulo?.toLowerCase().includes(filtro.toLowerCase()) ||
+      r.nombreUsuario?.toLowerCase().includes(filtro.toLowerCase())
   )
 
   if (loading) return <Loader imagen={tiempoCarga3} />
@@ -119,7 +164,13 @@ function ListaResenias() {
                       <strong className="reseña-titulo">
                         {r.juegoId?.titulo}
                       </strong>
-                      <p className="reseña-usuario">Por: {r.nombreUsuario}</p>
+                      <button
+                        onClick={() => Amigo(r.usuarioId?._id)}
+                        className="btn-amigo"
+                      >
+                        <p className="reseña-usuario">Por: {r.nombreUsuario}</p>
+                        <img src={iconAgregarAmigo} alt={iconAgregarAmigo} />
+                      </button>
                       <p className="reseña-recomendaria">
                         {r.recomendaria ? 'Recomendado' : 'No recomendado'}
                       </p>
