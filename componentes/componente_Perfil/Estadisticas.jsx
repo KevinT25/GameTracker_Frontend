@@ -5,6 +5,8 @@ function Estadisticas({ stats }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
+    if (!stats) return
+
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const size = 300
@@ -17,15 +19,19 @@ function Estadisticas({ stats }) {
     ctx.clearRect(0, 0, size, size)
 
     const labels = ['Jugado', 'Misiones', 'Amigos', 'Logros', 'Reseñas']
+
+    // Normalización
+    const normalize = (value, max) => Math.min(value / max, 1)
+
     const values = [
-      stats.tiempoActivo / 100,
-      stats.misionesCompletadas / 100,
-      stats.cantidaddeamigos / 100,
-      stats.logrosObtenidos / 100,
-      stats.reseñasDadas / 100,
+      normalize(stats.tiempoActivo, 200), // 200 horas
+      normalize(stats.misionesCompletadas, 50), // 50 misiones
+      normalize(stats.cantidaddeamigos, 20), // 20 amigos
+      normalize(stats.logrosObtenidos, 10), // 40 logros
+      normalize(stats.reseñasDadas, 10), // 10 reseñas
     ]
 
-    // Dibujar fondo del radar
+    // Fondo del radar
     ctx.strokeStyle = 'rgba(212,175,55,0.4)'
     ctx.lineWidth = 1
     for (let i = 1; i <= 5; i++) {
@@ -41,11 +47,11 @@ function Estadisticas({ stats }) {
       ctx.stroke()
     }
 
-    // Dibujar los valores del jugador
+    // Valores del jugador
     ctx.beginPath()
     for (let i = 0; i < values.length; i++) {
       const angle = (Math.PI * 2 * i) / values.length
-      const valueRadius = radius * Math.min(values[i], 1.2) // permite superar el límite visual
+      const valueRadius = radius * values[i]
       const x = center + Math.cos(angle) * valueRadius
       const y = center + Math.sin(angle) * valueRadius
       if (i === 0) ctx.moveTo(x, y)
@@ -84,12 +90,13 @@ function Estadisticas({ stats }) {
             Misiones completadas: {stats.misionesCompletadas}
           </div>
           <div className="stat-box glow">
-            Reseña Escritas: {stats.reseñasDadas}
+            Reseñas Escritas: {stats.reseñasDadas}
           </div>
           <div className="stat-box glow">
             Logros obtenidos: {stats.logrosObtenidos}
           </div>
         </div>
+
         <div className="chart-container">
           <canvas ref={canvasRef}></canvas>
         </div>

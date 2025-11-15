@@ -69,23 +69,13 @@ function Status() {
         // Stats
         if (statsRes.ok) {
           const stats = await statsRes.json()
-          const {
-            tiempoActivo = 0,
-            cantidaddeamigos = 0,
-            misionesCompletadas = 0,
-            tesorosDescubiertos = 0,
-            logrosObtenidos = 0,
-            reseñasDadas = 0,
-          } = stats || {}
-          const total =
-            (tiempoActivo +
-              cantidaddeamigos +
-              misionesCompletadas +
-              tesorosDescubiertos +
-              logrosObtenidos +
-              reseñasDadas) /
-            10
-          setLvl(Math.min(Math.floor(total) || 0, 120))
+
+          // Asegurar que nunca entre un valor inválido
+          const nivel = Number(stats.level) || 0
+
+          // Nivel máximo = 80
+          setLvl(Math.min(nivel, 80))
+          console.log(stats)
         }
 
         // Logros
