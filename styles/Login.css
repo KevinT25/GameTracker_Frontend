@@ -1,0 +1,134 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+}
+
+.modal-content {
+  background: var(--color-bg-secondary);
+  padding: 2rem;
+  border-radius: var(--border-radius-card);
+  border: var(--border-width-normal) solid var(--color-border);
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  animation: modalAppear 0.3s ease-out;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+  transition: var(--transition-fast);
+}
+
+.modal-close:hover {
+  transform: scale(1.2);
+}
+
+.Title {
+  font-family: var(--font-title);
+  color: var(--color-text-primary);
+  font-size: clamp(0.8rem, 2vw, 2rem);
+  font-weight: bold;
+  text-shadow: var(--text-shadow-gold);
+  margin-bottom: 25px;
+  margin-top: 10px;
+}
+
+.Form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.inpunt {
+  width: 100%;
+  max-width: 300px;
+  padding: var(--padding-button);
+  background: var(--color-bg-main);
+  border: var(--border-width-normal) solid var(--color-border);
+  border-radius: var(--border-radius-small);
+  color: var(--color-text-secondary);
+  font-family: var(--font-main);
+  font-size: var(--font-size-body);
+  transition: all var(--transition-fast);
+}
+
+.inpunt:focus {
+  outline: none;
+  border-color: var(--color-text-primary);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.inpunt::placeholder {
+  color: var(--color-outline);
+}
+
+.btn-registro {
+  width: 100%;
+  background: var(--color-bg-main);
+  border: solid 2px var(--color-border);
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: clamp(0.6rem, 1.5vw, 1.8rem);
+  font-weight: bold;
+  padding: clamp(6px, 1.5vw, 14px);
+  transition: var(--transition-fast);
+  font-family: var(--font-main);
+}
+
+.btn-registro:hover {
+  box-shadow: var(--shadow-glow);
+  color: var(--color-text-primary);
+  transform: translateY(-2px);
+  transform: scale(1.02);
+}
+
+.btn-switch {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.btn-switch:hover {
+  color: var(--color-text-primary);
+}
+
+.error-message {
+  color: #ff6b6b;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

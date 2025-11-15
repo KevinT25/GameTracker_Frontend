@@ -1,0 +1,160 @@
+.navbar {
+  background-color: var(--color-bg-accent);
+  border-bottom: var(--border-width-thick) solid var(--color-border);
+  padding: var(--padding-navbar);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-navbar);
+  letter-spacing: 2px;
+  box-shadow: var(--box-shadow-navbar);
+  font-family: var(--font-title);
+  position: relative;
+  z-index: 10;
+}
+
+.navbar #Logo {
+  font-family: var(--font-title);
+  font-size: clamp(16px, 4vw, 30px);
+  font-weight: bold;
+  color: var(--color-text-primary);
+  text-shadow: var(--text-shadow-gold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.navbar #Logo:hover {
+  text-shadow: 0 0 15px var(--color-text-primary),
+    0 0 15px var(--color-text-primary);
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: var(--gap-navbar);
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- PERFIL Y BOTONES ---------- */
+.navbar .boton-gremio {
+  cursor: pointer;
+  transition: var(--transition-fast);
+  color: var(--color-text-secondary);
+  font-family: var(--font-main);
+  text-decoration: none;
+  background: none;
+  border: none;
+
+  display: inline-flex; /* Alinea texto + icono */
+  align-items: center;
+  gap: 6px; /*Espacio entre texto e ícono */
+  font-size: 1rem;
+}
+
+.navbar .boton-gremio img.img-Icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  object-fit: cover;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Hover: consistente entre botón y link */
+.navbar .boton-gremio:hover {
+  color: var(--color-text-primary);
+  text-shadow: 0 0 10px var(--color-text-primary);
+  transform: scale(1.05);
+}
+
+/* ---------- HAMBURGER ---------- */
+.hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  width: 44px;
+  height: 36px;
+  padding: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 50;
+  position: relative;
+}
+
+.hamburger span {
+  display: block;
+  height: 3px;
+  width: 26px;
+  background: var(--color-text-primary);
+  border-radius: 3px;
+  transition: transform 0.22s ease, opacity 0.18s ease;
+}
+
+.hamburger.is-active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger.is-active span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.is-active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 1024px) {
+  .hamburger {
+    display: flex;
+  }
+
+  /* Ocultar menú por defecto */
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 12px;
+    background: var(--color-bg-accent);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 6px;
+    width: 220px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    z-index: 40;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links li {
+    padding: 10px 8px;
+    text-align: left;
+  }
+
+  .nav-links li + li {
+    border-top: 1px solid rgba(212, 175, 55, 0.06);
+  }
+
+  .nav-links .boton-gremio {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 8px 10px;
+    text-decoration: none;
+    color: var(--color-text-primary);
+  }
+
+  .navbar .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 60;
+  }
+}

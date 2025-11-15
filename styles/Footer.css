@@ -1,0 +1,16 @@
+.footer {
+  border-top: var(--border-width-normal) solid var(--color-border);
+  padding: var(--padding-footer);
+  font-size: var(--font-size-footer);
+  background-color: var(--color-bg-accent);
+  color: var(--color-text-primary);
+  text-shadow: var(--text-shadow-footer);
+  font-family: var(--font-main);
+  text-align: center;
+  margin-top: auto;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .footer { padding: clamp(10px, 3vw, 18px); font-size: 0.9rem; }
+}

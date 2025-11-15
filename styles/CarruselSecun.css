@@ -1,0 +1,74 @@
+/* ---------- CARRUSEL SECUNDARIO ---------- */
+.slider-categoria {
+  margin: 50px 0;
+  position: relative;
+  width: 100%;
+}
+
+.titulo-categoria {
+  font-family: var(--font-title);
+  color: var(--color-text-primary);
+  font-size: clamp(1rem, 2vw, 2rem);
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+/* Contenedor del slider */
+.contenedor-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Track que se mueve */
+.slider-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  gap: 15px;
+  padding: 0 10px;
+}
+
+/* Botones */
+.nav-btn {
+  position: absolute;
+  top: 40%;
+  background: transparent;
+  cursor: pointer;
+  border: none;
+  z-index: 10;
+  color: var(--color-text-secondary);
+  font-size: clamp(1rem, 2.2vw, 1.8rem);
+  padding: clamp(8px, 1.6vw, 14px);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  box-sizing: content-box;
+}
+
+.nav-btn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-outline);
+}
+
+.nav-btn.izquierda {
+  left: clamp(8px, 2.2vw, 60px);
+}
+
+.nav-btn.derecha {
+  right: clamp(8px, 2.2vw, 60px);
+}
+/* Responsive */
+@media (max-width: 480px) {
+  .nav-btn {
+    font-size: 1.1rem;
+    padding: 6px;
+  }
+  .nav-btn.izquierda {
+    left: 6px;
+  }
+  .nav-btn.derecha {
+    right: 6px;
+  }
+}

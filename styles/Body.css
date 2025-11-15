@@ -1,0 +1,27 @@
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-bg-main);
+  background-image: var(--bg-pattern);
+  background-repeat: repeat;
+  color: var(--color-text-primary);
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* CARDS - estilo pergamino */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap-lg);
+  padding: var(--padding-section);
+  margin: 0 auto;
+}
+
+/* Animación de brillo */
+.card:hover {
+  animation: glow 2s infinite;
+  transform: scale(1.03);
+}

@@ -1,0 +1,441 @@
+/*-----------------GENERAL------------------ */
+.info-juego {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--padding-section);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-main);
+  animation: fadeIn 0.8s ease-out;
+}
+
+/*----------------------JUEGO--------------------------- */
+.info-juego h1 {
+  font-family: var(--font-title);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-lg);
+  margin-top: 15px;
+  margin-bottom: 25px;
+  border-bottom: var(--border-width-normal) solid var(--color-border);
+  padding-bottom: 10px;
+}
+
+.info-juego .subtitle {
+  font-family: var(--font-title);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sh);
+  margin: 20px 0;
+  text-align: center;
+}
+
+.info-juego p {
+  line-height: 1.6;
+  text-align: start;
+  margin-bottom: 15px;
+  font-size: var(--font-size-body);
+}
+
+.info-juego strong {
+  color: var(--color-text-primary);
+}
+
+/*Portada */
+.portada-info {
+  width: 100%;
+  max-height: 360px;
+  object-fit: fill;
+  border: var(--border-width-thick) solid var(--color-border);
+  margin-bottom: 30px;
+  border-radius: var(--border-radius-small);
+  transition: var(--transition-medium);
+}
+
+/* Botones de Acción  */
+.acciones-juego {
+  display: flex;
+  gap: var(--gap-lg);
+  margin: 30px 0;
+  align-items: center;
+}
+
+.acciones-juego button {
+  cursor: pointer;
+  padding: var(--padding-button);
+  font-family: var(--font-title);
+  font-size: var(--font-size-navbar);
+  border-radius: var(--radius-md);
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: none;
+  color: var(--color-text-primary);
+  border: var(--border-width-normal) solid var(--color-border);
+}
+
+.acciones-juego button:hover {
+  background: var(--color-bg-accept);
+}
+
+/* Botón principal JUGAR */
+.btn-jugar {
+  flex-grow: 1;
+  background: var(--color-text-primary);
+}
+
+.btn-jugar:hover {
+  transform: translateY(-2px);
+}
+
+/* Boton de estado */
+.iconGames {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  transition: var(--transition-fast);
+}
+
+.mygame-boton,
+.mywishlist-boton,
+.completado-boton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  width: 50px;
+  height: 50px;
+}
+
+.acciones-juego button.activo {
+  background: var(--color-bg-accept);
+  border-color: var(--color-text-primary);
+}
+
+.acciones-juego button.activo:hover {
+  transform: scale(1.05);
+}
+
+/* Responsi- */
+@media (max-width: 900px) {
+  .acciones-juego {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .btn-jugar {
+    flex-grow: 0;
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .acciones-juego {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .acciones-juego button {
+    width: 100%;
+    max-width: 350px;
+  }
+
+  .mygame-boton,
+  .mywishlist-boton,
+  .completado-boton {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 1rem;
+  }
+
+  .completado-boton{
+    justify-content: center;
+  }
+
+  .iconGames {
+    margin-right: 10px;
+  }
+}
+
+/* -------------------- SECCIÓN RESEÑAS -------------------- */
+/* Formulario principal */
+.reseña-container {
+  margin: 40px 0;
+  padding: var(--padding-card);
+  background-color: var(--color-bg-secondary);
+  border: var(--border-width-thick) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-main);
+}
+
+.reseña-container h3 {
+  font-family: var(--font-title);
+  color: var(--color-text-primary);
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 25px;
+  border-bottom: 1px solid var(--color-outline);
+  padding-bottom: 10px;
+}
+
+.reseña-container form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  color: var(--color-text-secondary);
+}
+
+.reseña-container label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reseña-container textarea {
+  resize: vertical;
+  min-height: 120px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-main);
+  padding: 8px 10px;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+.reseña-container textarea:focus {
+  outline: none;
+  border-color: var(--color-bg-accent);
+}
+
+/*  Datos del juego */
+.datos-juego {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.datos-juego label {
+  flex: 1;
+}
+
+.datos-juego input[type='number'],
+.datos-juego input[type='text'] {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.datos-juego input:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+/* Recomendación y puntuación */
+.recomendarias {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.recomendarias label {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Checkbox mágico */
+.checkbox-magic {
+  appearance: none;
+  border: none;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  background: url(../../assets/Icons/filter-checkbox.png) center/contain
+    no-repeat;
+  transition: transform 0.2s ease;
+}
+
+.checkbox-magic:checked {
+  background-image: url(../../assets/Icons/filter-checkbox-checked.png);
+}
+
+.checkbox-magic:hover {
+  transform: scale(1.1);
+}
+
+/* Puntuación */
+.label-puntuacion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: bold;
+}
+
+.rating {
+  display: flex;
+  justify-content: center;
+  gap: 35px;
+  cursor: pointer;
+}
+
+.grimorio {
+  width: 55px;
+  height: 55px;
+  transition: transform 0.2s ease;
+}
+
+.grimorio:hover {
+  transform: scale(1.1);
+}
+
+/*  Botón de envío  */
+.reseña-container button[type='submit'] {
+  align-self: center;
+  cursor: pointer;
+  padding: 0.6rem 2rem;
+  font-family: var(--font-title);
+  color: var(--color-text-primary);
+  background-color: transparent;
+  text-transform: uppercase;
+  border-radius: var(--radius-md);
+  border: var(--border-width-normal) solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.reseña-container button[type='submit']:hover {
+  background: var(--color-bg-accept);
+  color: var(--color-text-hover);
+  transform: translateY(-2px);
+}
+
+.reseña-container button[type='submit']:disabled {
+  background: var(--color-bg-alt);
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/*  Mensajes de estado  */
+.reseña-container p {
+  text-align: center;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+}
+
+/*  Responsive */
+@media (max-width: 768px) {
+  .datos-juego {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .datos-juego label input{
+    width: 100%;
+  }
+
+  .rating {
+    gap: 0px;
+  }
+
+  .rating .grimorio {
+    width: 30px;
+    height: 30px;
+  }
+
+  .label-puntuacion {
+    flex-wrap: wrap;
+  }
+
+  .reseña-container h3 {
+    font-size: 1.5rem;
+  }
+}
+
+/*-------------------CONTESTACIONES----------------------*/
+/* Contenedor del header */
+.reseña-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Bloque de la info del usuario */
+.reseña-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Nombre del usuario */
+.reseña-titulo {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+  text-align: center;
+  border-bottom: 1px dashed var(--color-text-secondary);
+}
+
+/* Contenedor de los grimorios */
+.grimorios-puntuacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Iconos de grimorios */
+.grimorio {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.grimorio:hover {
+  transform: scale(1.2);
+}
+
+/* Botón de responder */
+.btn-responder {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/*Contenido de la respuesta*/
+.reseña-item {
+  margin-bottom: 15px;
+}
+
+.info-reseña {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-outline);
+}
+
+/*  Responsive */
+@media (max-width: 768px) {
+  .reseña-summary {
+  flex-direction: column;
+  gap: 10px;
+  }
+
+  .grimorio {
+    width: 25px;
+    height: 25px;
+  }
+}
