@@ -18,7 +18,7 @@ function Estadisticas({ stats }) {
 
     ctx.clearRect(0, 0, size, size)
 
-    const labels = ['Jugado', 'Misiones', 'Amigos', 'Logros', 'Reseñas']
+    const labels = ['Jugado', 'Completados', 'Amigos', 'Logros', 'Reseñas']
 
     // Normalización
     const normalize = (value, max) => Math.min(value / max, 1)
@@ -87,7 +87,7 @@ function Estadisticas({ stats }) {
             Horas jugadas: {stats.tiempoActivo}
           </div>
           <div className="stat-box glow">
-            Misiones completadas: {stats.misionesCompletadas}
+            Juegos completados: {stats.misionesCompletadas}
           </div>
           <div className="stat-box glow">
             Reseñas Escritas: {stats.reseñasDadas}

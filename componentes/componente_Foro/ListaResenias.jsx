@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import Loader from '../componente_General/Loading'
 import Respuesta from './Respuesta'
 import tiempoCarga3 from './../../../assets/loadingGif/tiempoCarga3.gif'
-import iconAgregarAmigo from '../../../assets/Icons/iconAgregarAmigo.png'
-
 
 function ListaResenias() {
   const [reseñas, setReseñas] = useState([])
@@ -167,9 +165,9 @@ function ListaResenias() {
                       <button
                         onClick={() => Amigo(r.usuarioId?._id)}
                         className="btn-amigo"
+                        data-tooltip="Visitar perfil"
                       >
                         <p className="reseña-usuario">Por: {r.nombreUsuario}</p>
-                        <img src={iconAgregarAmigo} alt={iconAgregarAmigo} />
                       </button>
                       <p className="reseña-recomendaria">
                         {r.recomendaria ? 'Recomendado' : 'No recomendado'}

@@ -25,16 +25,18 @@ import Login from './../componente_General/Login'
 function Status() {
   const [user, setUser] = useState(null)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [openDetail, setOpenDetail] = useState(null)
   const [opcion, setOpcion] = useState('')
   const [lvl, setLvl] = useState(0)
-  const [titulo, setTitulo] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [logros, setLogros] = useState([])
+  const [miLogro, setMiLogro] = useState('')
   const navigate = useNavigate()
 
   // Verifica usuario al cargar
   useEffect(() => {
     const userData = localStorage.getItem('user')
+
     if (!userData) {
       setIsLoginOpen(true)
       setLoading(false)
@@ -55,46 +57,63 @@ function Status() {
     if (!user) return
 
     const uid = user.id || user._id
+
     const fetchData = async () => {
       try {
         setLoading(true)
-        setError('')
 
-        const [statsRes, logrosRes, generoRes] = await Promise.all([
-          fetch(`http://localhost:3000/api/dataUser/usuario/${uid}/stats`),
-          fetch(`http://localhost:3000/api/usuario/${uid}/logros`),
-          fetch(`http://localhost:3000/api/dataUser/usuario/${uid}`),
+        const urls = {
+          stats: `http://localhost:3000/api/dataUser/usuario/${uid}/stats`,
+          logros: `http://localhost:3000/api/usuario/${uid}/miLogro`,
+          dataUser: `http://localhost:3000/api/dataUser/usuario/${uid}`,
+        }
+
+        const [statsRes, logrosRes, dataUserRes] = await Promise.all([
+          fetch(urls.stats),
+          fetch(urls.logros),
+          fetch(urls.dataUser),
         ])
 
         // Stats
         if (statsRes.ok) {
           const stats = await statsRes.json()
 
-          // Asegurar que nunca entre un valor inválido
           const nivel = Number(stats.level) || 0
 
-          // Nivel máximo = 80
           setLvl(Math.min(nivel, 80))
-          console.log(stats)
+        } else {
+          console.error('Error stats:', await statsRes.text())
         }
 
         // Logros
         if (logrosRes.ok) {
-          const logros = await logrosRes.json()
-          if (Array.isArray(logros) && logros.length > 0) {
-            setTitulo(logros[logros.length - 1].nombre || 'Aventurero Novato')
-          } else setTitulo('Aventurero Novato')
+          const logrosData = await logrosRes.json()
+
+          // Si ya vienen como strings, los usamos directamente
+          if (Array.isArray(logrosData)) {
+            const soloNombres = logrosData.map(
+              (l) => (typeof l === 'string' ? l : l.nombre) // si es objeto, toma nombre
+            )
+            setLogros(soloNombres)
+          }
+        } else {
+          console.error('Error logros:', await logrosRes.text())
         }
 
-        // Género
-        if (generoRes.ok) {
-          const generoData = await generoRes.json()
-          const item = Array.isArray(generoData) ? generoData[0] : generoData
-          if (item && item.genero) setOpcion(item.genero)
+        // Mi Logro
+        if (dataUserRes.ok) {
+          const dataUser = await dataUserRes.json()
+
+          if (Array.isArray(dataUser) && dataUser.length > 0) {
+            if (dataUser[0].miLogro) {
+              setMiLogro(dataUser[0].miLogro)
+            }
+          }
+        } else {
+          console.error('Error dataUser:', await dataUserRes.text())
         }
       } catch (err) {
         console.error('Error cargando datos del perfil:', err)
-        setError('No se pudieron cargar tus datos. Intenta nuevamente.')
       } finally {
         setLoading(false)
       }
@@ -103,19 +122,49 @@ function Status() {
     fetchData()
   }, [user])
 
+  // Guarda logro
+  const seleccionarLogro = async (logro) => {
+    try {
+      const uid = user?.id || user?._id
+
+      const url = `http://localhost:3000/api/usuario/${uid}/miLogro`
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ miLogro: logro }),
+      })
+
+      const responseText = await response.text()
+
+      if (!response.ok) {
+        console.error('Error en PUT miLogro:', responseText)
+        return
+      }
+
+      setMiLogro(logro)
+    } catch (error) {
+      console.error('Error al seleccionar logro:', error)
+    }
+  }
+
   // Guardar género
   const guardarGenero = async (nuevoGenero) => {
     try {
       const uid = user?.id || user?._id
-      const response = await fetch(
-        `http://localhost:3000/api/dataUser/usuario/${uid}/genero`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ genero: nuevoGenero }),
-        }
-      )
+
+      const url = `http://localhost:3000/api/dataUser/usuario/${uid}/genero`
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ genero: nuevoGenero }),
+      })
+
       if (!response.ok) throw new Error(await response.text())
+
       setOpcion(nuevoGenero)
     } catch (err) {
       console.error('Error al guardar el género:', err)
@@ -178,21 +227,16 @@ function Status() {
     return <div className="perfil-loading">Cargando tu perfil...</div>
   }
 
-  if (error) {
-    return (
-      <div className="perfil-error">
-        ⚠️ {error}
-        <button onClick={() => window.location.reload()}>Reintentar</button>
-      </div>
-    )
-  }
-
   // Render principal
   return (
     <>
       <div className="title">
         <span></span> <h1>STATUS</h1>
-        <button className="btn-logout" onClick={() => navigate('/Confi')}>
+        <button
+          className="btn-logout"
+          onClick={() => navigate('/Confi')}
+          data-tooltip="Configuracion"
+        >
           <img
             src={iconConfiguracion}
             alt="configuración"
@@ -224,11 +268,22 @@ function Status() {
             Bienvenido: <p>{user.nombre || 'Aventurero Anónimo'}</p>
           </h2>
 
-          <details className="atribute" id="genero-Selection">
-            <summary id="summary">
+          <details
+            className="atribute"
+            id="genero-Selection"
+            open={openDetail === 'genero'}
+          >
+            <summary
+              id="summary-genero"
+              onClick={(e) => {
+                e.preventDefault() // Evita que el details se abra automáticamente
+                setOpenDetail(openDetail === 'genero' ? null : 'genero')
+              }}
+            >
               <h2>Género:</h2>
               <p>{opcion || 'Un Caballero novato'}</p>
             </summary>
+
             {[
               'Dwarf de Hierro',
               'DragonMan del Fuego Eterno',
@@ -254,9 +309,38 @@ function Status() {
             ))}
           </details>
 
-          <h2 className="atribute">
-            Título: <p>{titulo}</p>
-          </h2>
+          <details
+            className="atribute"
+            id="logro-Selection"
+            open={openDetail === 'logro'}
+          >
+            <summary
+              id="summary-logro"
+              onClick={(e) => {
+                e.preventDefault()
+                setOpenDetail(openDetail === 'logro' ? null : 'logro')
+              }}
+            >
+              <h2>Titulo:</h2>
+              <p>{miLogro || 'Novato'}</p>
+            </summary>
+
+            {logros.length > 0 ? (
+              logros.map((nombre) => (
+                <div
+                  key={nombre}
+                  role="button"
+                  className="item-logro activo"
+                  onClick={() => seleccionarLogro(nombre)}
+                >
+                  <p>{nombre}</p>
+                </div>
+              ))
+            ) : (
+              <p>Ningún logro aun</p>
+            )}
+          </details>
+
           <h2 className="atribute">
             Rango: <p>{rango()}</p>
           </h2>

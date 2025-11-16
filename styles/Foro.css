@@ -154,16 +154,41 @@
   background: none;
   border: none;
   cursor: pointer;
-}
-
-.btn-amigo img {
-  width: 30px;
-  height: 30px;
-  margin-left: 1px;
+  margin-top: 5px;
 }
 
 .btn-amigo:hover {
-  border-bottom: 1px solid var(--color-text-hover);
+  transform: translateX(5px);
+}
+
+.btn-amigo p:hover {
+  color: var(--color-text-hover);
+}
+
+.btn-amigo::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  line-height: 1;
+  background: var(--color-outline);
+  color: var(--color-text-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s ease;
+  transform: translateX(90%) translateY(-5%);
+  z-index: 50;
+}
+
+.btn-amigo:focus {
+  outline: 2px solid rgba(0, 120, 212, 0.3);
+  outline-offset: 2px;
+}
+.btn-amigo:hover::after,
+.btn-amigo:focus::after {
+  opacity: 1;
 }
 
 /*------------------FILTRO--------------------- */

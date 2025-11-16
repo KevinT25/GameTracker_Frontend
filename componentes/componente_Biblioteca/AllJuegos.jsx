@@ -89,7 +89,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
               return idJuego === j._id
             })
 
-            if (!relacion) return j // si no hay relación, no se cambia
+            if (!relacion) return j 
 
             return {
               ...j,
@@ -212,7 +212,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
   // Función de wishlist y agregar a mis juegos
   const actualizarEstado = async (juegoId, campo, valor) => {
     try {
-      // 🔹 Obtener userId desde estado o localStorage
+      // Obtener userId desde estado o localStorage
       let userId = user?._id || user?.id
 
       if (!userId) {
@@ -407,6 +407,9 @@ function AllJuegos({ juegos = [], setJuegos }) {
                   onClick={() =>
                     actualizarEstado(juego._id, 'misjuegos', !juego.misjuegos)
                   }
+                  data-tooltip={`${
+                    juego.misjuegos ? 'Quitar' : 'Añadir'
+                  } mi juego`}
                 >
                   <img
                     src={juego.misjuegos ? iconMisJuegos : iconEliminar}
@@ -425,6 +428,9 @@ function AllJuegos({ juegos = [], setJuegos }) {
                   onClick={() =>
                     actualizarEstado(juego._id, 'wishlist', !juego.wishlist)
                   }
+                  data-tooltip={`${
+                    juego.wishlist ? 'Quitar' : 'Añadir'
+                  } favorito`}
                 >
                   <img
                     src={juego.wishlist ? iconWishlist : iconNoWishlist}

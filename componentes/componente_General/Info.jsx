@@ -217,13 +217,14 @@ function InfoJuego({ setJuegos }) {
       </p>
 
       <div className="acciones-juego">
-        <button className="btn-jugar">Jugar</button>
+        <button className="btn-jugar">Descargar</button>
 
         <button
           className={`mygame-boton ${juego.misjuegos ? 'activo' : ''}`}
           onClick={() =>
             actualizarEstado(juego._id, 'misjuegos', !juego.misjuegos)
           }
+          data-tooltip={`${juego.misjuegos ? 'Quitar' : 'Añadir'} mi juego`}
         >
           <img
             src={juego.misjuegos ? iconMisJuegos : iconEliminar}
@@ -237,6 +238,7 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'wishlist', !juego.wishlist)
           }
+          data-tooltip={`${juego.wishlist ? 'Quitar' : 'Añadir'} favorito`}
         >
           <img
             src={juego.wishlist ? iconWishlist : iconNoWishlist}
@@ -250,6 +252,9 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'completado', !juego.completado)
           }
+          data-tooltip={`${
+            juego.completado ? 'Quitar' : 'Añadir'
+          } Completado `}
         >
           <img
             src={juego.completado ? iconCompletados : iconPorCompletar}
@@ -280,35 +285,35 @@ function InfoJuego({ setJuegos }) {
           <div key={r._id} className="reseña-item">
             <details className="reseña-details">
               <summary className="reseña-summary">
-                  <div className="reseña-info">
-                    <strong className="reseña-titulo">
-                      {r.usuarioId?.nombre || 'Anónimo'}
-                    </strong>
-                    <div className="grimorios-puntuacion">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <img
-                          key={n}
-                          src={
-                            n <= r.puntuacion ? iconGrimorio : iconGrimorioVacio
-                          }
-                          alt={`grimorio ${
-                            n <= r.puntuacion ? 'activo' : 'vacío'
-                          }`}
-                          className="grimorio"
-                        />
-                      ))}
-                    </div>
+                <div className="reseña-info">
+                  <strong className="reseña-titulo">
+                    {r.usuarioId?.nombre || 'Anónimo'}
+                  </strong>
+                  <div className="grimorios-puntuacion">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <img
+                        key={n}
+                        src={
+                          n <= r.puntuacion ? iconGrimorio : iconGrimorioVacio
+                        }
+                        alt={`grimorio ${
+                          n <= r.puntuacion ? 'activo' : 'vacío'
+                        }`}
+                        className="grimorio"
+                      />
+                    ))}
                   </div>
+                </div>
 
-                  <button
-                    className="btn-responder"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setReseniaSeleccionada(r)
-                    }}
-                  >
-                    Responder
-                  </button>
+                <button
+                  className="btn-responder"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setReseniaSeleccionada(r)
+                  }}
+                >
+                  Responder
+                </button>
               </summary>
               <div className="reseña-contenido">
                 <div className="info-reseña">

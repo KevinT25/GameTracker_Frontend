@@ -102,6 +102,34 @@
   height: 50px;
 }
 
+.completado-boton::after,
+.mygame-boton::after,
+.mywishlist-boton::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  line-height: 1;
+  background: var(--color-outline);
+  color: var(--color-text-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.07s ease, transform 0.07s ease;
+  transform: translateY(-120%);
+  z-index: 50;
+}
+
+.completado-boton:hover::after,
+.completado-boton:focus::after,
+.mygame-boton:hover::after,
+.mygame-boton:focus::after,
+.mywishlist-boton:hover::after,
+.mywishlist-boton:focus::after {
+  opacity: 1;
+}
+
 .acciones-juego button.activo {
   background: var(--color-bg-accept);
   border-color: var(--color-text-primary);
