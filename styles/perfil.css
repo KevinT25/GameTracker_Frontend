@@ -53,7 +53,7 @@
 .title button:focus::after {
   opacity: 1;
 }
-
+.title button .icon-amigo,
 .title button .iconConfi {
   width: 40px;
   height: 40px;

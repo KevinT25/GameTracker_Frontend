@@ -1,6 +1,6 @@
 import '../../styles/Perfil.css'
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom' // ✅ añadido
 import iconMisJuegos from '../../../assets/Icons/iconMisJuegos.png'
 import iconCompletados from '../../../assets/Icons/iconCompletados.png'
 import iconPorCompletar from '../../../assets/Icons/iconPorCompletar.png'
@@ -12,14 +12,23 @@ function MisJuegos() {
   const [estadoJuego, setEstadoJuego] = useState('')
   const [error, setError] = useState(null)
   const navigate = useNavigate()
-  // Obtener juegos del usuario logueado
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'))
-    if (!user) return 
 
-    fetch(`http://localhost:3000/api/datauser/usuario/${user.id}`)
+  const { id } = useParams()
+  // Obtener juegos del usuario correcto
+  useEffect(() => {
+    let uid = id
+
+    if (!uid) {
+      // 🔹 si NO hay userId → mi perfil
+      const user = JSON.parse(localStorage.getItem('user'))
+      uid = user?.id || user?._id
+    }
+
+    if (!uid) return
+
+    fetch(`http://localhost:3000/api/datauser/usuario/${uid}`)
       .then((res) => {
-        if (!res.ok) throw new Error('No se pudieron obtener tus juegos')
+        if (!res.ok) throw new Error('No se pudieron obtener los juegos')
         return res.json()
       })
       .then((data) => {
@@ -28,7 +37,7 @@ function MisJuegos() {
         setJuegos(juegosUsuario)
       })
       .catch((err) => setError(err.message))
-  }, [])
+  }, [id])
 
   // 🔹 Filtros y ordenamiento
   const filteredAndSorted = useMemo(() => {
@@ -44,15 +53,14 @@ function MisJuegos() {
       return true
     })
 
-
     return filteredList
-  }, [juegos, query, estadoJuego,])
+  }, [juegos, query, estadoJuego])
 
-
-  if (error) return <div className="mis-juegos">Error{error}</div>
+  if (error) return <div className="mis-juegos">Error: {error}</div>
   if (juegos.length === 0)
     return (
-      <div className="mis-juegos" id="error">No tienes juegos aún.
+      <div className="mis-juegos" id="error">
+        No hay juegos aún.
       </div>
     )
 
@@ -70,7 +78,7 @@ function MisJuegos() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar entre mis juegos..."
+          placeholder="Buscar entre los juegos..."
         />
       </div>
 
@@ -118,15 +126,16 @@ function MisJuegos() {
         <p>
           Mostrando {filteredAndSorted.length} de {juegos.length} juegos
         </p>
-        <SliderCategoria juegos={filteredAndSorted} id='carrusel'/>
+        <SliderCategoria juegos={filteredAndSorted} id="carrusel" />
+
         <button
           className="button-navegate"
           onClick={(e) => {
-            e.stopPropagation() 
+            e.stopPropagation()
             navigate(`/biblioteca`)
           }}
         >
-          Explorar mas Juegos
+          Explorar más Juegos
         </button>
       </section>
     </div>

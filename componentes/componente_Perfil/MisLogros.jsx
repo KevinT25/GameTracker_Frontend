@@ -1,21 +1,27 @@
 import '../../styles/Perfil.css'
 import { useEffect, useState, useCallback } from 'react'
+import { useParams } from 'react-router-dom'
 
 function MisLogros() {
   const [logros, setLogros] = useState([])
   const [logrosVisibles, setLogrosVisibles] = useState(4)
   const [logroActivo, setLogroActivo] = useState(null)
 
+  const { id } = useParams()
+
   const cargarLogros = useCallback(async () => {
-    const user = JSON.parse(localStorage.getItem('user'))
-    const uid = user?.id || user?._id
+    let uid = id
+
     if (!uid) {
-      return
+      const user = JSON.parse(localStorage.getItem('user'))
+      uid = user?.id || user?._id
     }
+
+    if (!uid) return
+
     try {
       const res = await fetch(`http://localhost:3000/api/usuario/${uid}/logros`)
       if (!res.ok) throw new Error(await res.text())
-
       const data = await res.json()
       if (Array.isArray(data)) {
         setLogros(data)
@@ -25,7 +31,7 @@ function MisLogros() {
     } catch (err) {
       console.error('Error cargando los logros:', err)
     }
-  }, [])
+  }, [id])
 
   useEffect(() => {
     cargarLogros()

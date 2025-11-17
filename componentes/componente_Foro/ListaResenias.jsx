@@ -30,45 +30,8 @@ function ListaResenias() {
       .finally(() => clearTimeout(timeout))
   }, [])
 
-  // Agregar amigos
-  async function agregarAmigo(usuarioId, amigoId) {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/dataUser/usuario/${usuarioId}/anadir-amigo/${amigoId}`,
-        { method: 'POST' }
-      )
-
-      const data = await response.json()
-
-      if (response.ok) {
-        alert(`Amigo agregado: total amigos ${data.cantidadamigos}`)
-        return data.amigos
-      } else {
-        alert(`Error: ${data.message}`)
-      }
-    } catch (error) {
-      alert(`Error: ${error.message}`)
-    }
-  }
-
-  // Función auxiliar para usar en el botón
-  const Amigo = (amigoId) => {
-    const storedUser = localStorage.getItem('user')
-    if (!storedUser) {
-      alert('Debes iniciar sesión para agregar amigos.')
-      navigate('/perfil')
-      return
-    }
-
-    const usuario = JSON.parse(storedUser)
-    const usuarioId = usuario._id || usuario.id
-
-    if (!amigoId) {
-      alert('No se pudo identificar al usuario a agregar.')
-      return
-    }
-
-    agregarAmigo(usuarioId, amigoId)
+  const verPerfil = (id) => {
+    navigate(`/perfil/${id}`)
   }
 
   // Abrir modal de respuesta
@@ -163,7 +126,7 @@ function ListaResenias() {
                         {r.juegoId?.titulo}
                       </strong>
                       <button
-                        onClick={() => Amigo(r.usuarioId?._id)}
+                        onDoubleClick={() => verPerfil(r.usuarioId._id)}
                         className="btn-amigo"
                         data-tooltip="Visitar perfil"
                       >

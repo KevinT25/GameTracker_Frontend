@@ -1,52 +1,57 @@
+import { useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Status from './Status'
 import Estadisticas from './Estadisticas'
 import MisJuegos from './MisJuegos'
 import MisLogros from './MisLogros'
 
-function Perfil() {
+function VerPerfil() {
+  const { id } = useParams()
   const [stats, setStats] = useState(null)
+  const [usuario, setUsuario] = useState(null)
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (!userData) {
-      return
+    if (!id) return
+
+    // Obtener datos del usuario visitado
+    const obtenerUsuario = async () => {
+      const res = await fetch(`http://localhost:3000/api/users/users/${id}`)
+      const data = await res.json()
+      setUsuario(data)
     }
 
-    const usuario = JSON.parse(userData)
-    const usuarioId = usuario?.id
-
-    const obtenerEstadisticas = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${usuarioId}/stats`
-        )
-        const data = await response.json()
-        setStats(data)
-      } catch (err) {
-        console.error('Error al obtener estadísticas:', err)
-      }
+    // Obtener estadisticas del usuario visitado
+    const obtenerStats = async () => {
+      const res = await fetch(
+        `http://localhost:3000/api/dataUser/usuario/${id}/stats`
+      )
+      const data = await res.json()
+      setStats(data)
     }
-    obtenerEstadisticas()
-  }, [])
+
+    obtenerUsuario()
+    obtenerStats()
+  }, [id])
+
+  if (!usuario) return <p className="cargando">Cargando perfil...</p>
 
   return (
     <div>
-      <Status />
+        <Status userId={id} />
       <div className="hr"></div>
-      {stats ? (
+        {stats ? (
         <div className="estadisticas-right">
           <Estadisticas stats={stats} />
         </div>
-      ) : (
-        <p className="cargando">Cargando tus estadisticas ...</p>
-      )}
+        ) : (
+          <p className="cargando">Cargando estadísticas...</p>
+        )}
       <div className="hr"></div>
-      <MisJuegos />
+        <MisJuegos userId={id} />
       <div className="hr"></div>
-      <MisLogros />
+        <MisLogros userId={id} />
     </div>
   )
 }
 
-export default Perfil
+export default VerPerfil
