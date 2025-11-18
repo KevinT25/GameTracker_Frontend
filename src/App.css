@@ -1,0 +1,123 @@
+@import url('./styles/Body.css');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Tipografías usada*/
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Uncial+Antiqua&family=Crimson+Text&display=swap');
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+:root {
+  /* Colores */
+  --color-bg-main: #0b0b0b; /* Fondo general del body */
+  --color-bg-secondary: #1a1a1a; /* Fondos degradados o secundarios */
+  --color-bg-accent: #000; /* Fondo de navbar y footer */
+  --color-bg-alt: #111111;
+  --color-bg-accept: rgb(211, 181, 82, 0.1);
+  --color-bg-refused: rgb(179, 36, 36, 0.1);
+  --color-borde-refused: #380b0b; 
+  --color-border: #d4af37; /* Borde principal dorado */
+  --color-outline: rgba(255, 255, 255, 0.133); /* Outline sutil */
+  --color-text-hover: #fff; /* Sutil hover */
+  --color-text-primary: #d4af37; /* Dorado medieval */
+  --color-text-secondary: #fff; /* Blanco para hover o contraste */
+  --color-text-tertiary: #aaaaaa; /* contrasete */
+  
+
+  /*Tipografía*/
+  --font-main: 'Crimson Text', serif; /* Texto general */
+  --font-title: 'Cinzel Decorative', serif; /* Títulos y logo */
+  --font-ornament: 'Uncial Antiqua', serif; /* Iconos o detalles decorativos */
+
+  /*Tamaños de texto*/
+  --font-size-navbar: 20px;
+  --font-size-body: 18px;
+  --font-size-body-lg: 2rem;
+  --font-size-body-sh: 0.9rem;
+  --font-size-footer: 16px;
+  --font-size-card: 18px;
+  --icon-size: 22px;
+
+  /*Espaciado*/
+  --padding-navbar: 15px 30px;
+  --padding-footer: 20px;
+  --padding-card: 25px;
+  --gap-navbar: 30px;
+  --gap-cards: 25px;
+  --padding-button: 10px 20px;
+  --padding-section: 50px;
+  --gap-lg: 25px;
+
+  /*Bordes*/
+  --border-width-thick: 3px;
+  --border-width-normal: 2px;
+  --border-radius-small: 8px;
+  --border-radius-card: 12px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /*Sombras y efectos*/
+  --box-shadow-navbar: 0 0 15px rgba(212, 175, 55, 0.3);
+  --box-shadow-card: 0 0 20px rgba(212, 175, 55, 0.2);
+  --text-shadow-gold: 0 0 10px rgba(212, 175, 55, 0.6);
+  --text-shadow-footer: 0 0 5px rgba(212, 175, 55, 0.4);
+  --text-shadow-hover: 0 0 10px #d4af37;
+  --shadow-card: 0 0 20px rgba(212, 175, 55, 0.2);
+  --shadow-glow: 0 0 10px #d4af37, 0 0 20px #d4af37;
+
+  /*Transiciones y animaciones*/
+  --transition-fast: 0.3s;
+  --transition-medium: 0.5s;
+
+  /*Otros*/
+  --container-padding: 50px;
+  --bg-pattern: url('./assets/dark-mosaic.png');
+}
