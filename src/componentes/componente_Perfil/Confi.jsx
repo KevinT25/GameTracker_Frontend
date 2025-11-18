@@ -325,8 +325,8 @@ function Confi() {
           {juegos.map((g) => (
             <div key={g._id} className="item-juego">
               <img
-                src={g.imagenPortada}
-                alt={g.titulo}
+                src={g?.imagenPortada || '/placeholder.jpg'}
+                alt={g?.titulo || 'Sin título'}
                 className="mini-portada"
               />
               <div className="meta">

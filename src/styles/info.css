@@ -281,13 +281,13 @@
   width: 35px;
   height: 35px;
   cursor: pointer;
-  background: url(../../assets/Icons/filter-checkbox.png) center/contain
+  background: url(../assets/Icons/filter-checkbox.png) center/contain
     no-repeat;
   transition: transform 0.2s ease;
 }
 
 .checkbox-magic:checked {
-  background-image: url(../../assets/Icons/filter-checkbox-checked.png);
+  background-image: url(../assets/Icons/filter-checkbox-checked.png);
 }
 
 .checkbox-magic:hover {
