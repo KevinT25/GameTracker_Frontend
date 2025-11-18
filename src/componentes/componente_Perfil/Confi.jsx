@@ -326,10 +326,10 @@ function Confi() {
 
         <h3>Lista de juegos</h3>
         <div className="lista-juegos">
-          {juegos.map((g) => {
-            if (!g) return null
+          {juegos.map((g, i) => {
+            if (!g || !g._id) return null
             return (
-              <div key={g._id} className="item-juego">
+              <div key={g._id || i} className="item-juego">
                 <img
                   src={g?.imagenPortada || '/placeholder.jpg'}
                   alt={g?.titulo || 'Sin título'}
