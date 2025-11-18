@@ -45,6 +45,7 @@ function Status({ userId }) {
   const [logros, setLogros] = useState([])
   const [miLogro, setMiLogro] = useState('')
 
+  const API_URL = import.meta.env.VITE_API_URL
   const navigate = useNavigate()
 
   // --- Cargar datos del usuario del perfil ---
@@ -60,9 +61,8 @@ function Status({ userId }) {
     } else {
       const fetchUser = async () => {
         try {
-          const res = await fetch(
-            `http://localhost:3000/api/users/users/${visitingId}`
-          )
+          const API_URL = import.meta.env.VITE_API_URL
+          const res = await fetch(`${API_URL}/api/users/users/${visitingId}`)
           const data = await res.json()
           setUser(data)
         } catch (err) {
@@ -82,15 +82,10 @@ function Status({ userId }) {
     const fetchData = async () => {
       try {
         setLoading(true)
-
-        const statsRes = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${uid}/stats`
-        )
-        const logrosRes = await fetch(
-          `http://localhost:3000/api/usuario/${uid}/miLogro`
-        )
-        const dataUserRes = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${uid}`
+        const API_URL = import.meta.env.VITE_API_URL
+        const statsRes = await fetch(`${API_URL}/api/dataUser/usuario/${uid}/stats`)
+        const logrosRes = await fetch(`${API_URL}/api/usuario/${uid}/miLogro`)
+        const dataUserRes = await fetch(`${API_URL}/api/dataUser/usuario/${uid}`
         )
 
         if (statsRes.ok) {
@@ -138,9 +133,8 @@ function Status({ userId }) {
 
     const verificarAmistad = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${usuarioId}`
-        )
+        const API_URL = import.meta.env.VITE_API_URL
+        const res = await fetch(`${API_URL}/api/dataUser/usuario/${usuarioId}`)
         const data = await res.json()
 
         if (Array.isArray(data) && data[0]?.amigos) {
@@ -159,7 +153,7 @@ function Status({ userId }) {
   async function agregarAmigo(usuarioId, amigoId) {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/dataUser/usuario/${usuarioId}/anadir-amigo/${amigoId}`,
+        `${API_URL}/api/dataUser/usuario/${usuarioId}/anadir-amigo/${amigoId}`,
         { method: 'POST' }
       )
 
@@ -199,7 +193,7 @@ function Status({ userId }) {
     try {
       const uid = user?.id || user?._id
 
-      const url = `http://localhost:3000/api/usuario/${uid}/miLogro`
+      const url = `${API_URL}/api/usuario/${uid}/miLogro`
 
       const response = await fetch(url, {
         method: 'PUT',
@@ -226,8 +220,7 @@ function Status({ userId }) {
   const guardarGenero = async (nuevoGenero) => {
     try {
       const uid = user?.id || user?._id
-
-      const url = `http://localhost:3000/api/dataUser/usuario/${uid}/genero`
+      const url = `${API_URL}/api/dataUser/usuario/${uid}/genero`
 
       const response = await fetch(url, {
         method: 'PUT',

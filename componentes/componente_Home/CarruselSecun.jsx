@@ -4,9 +4,9 @@ import SliderCategoria from './Categoria'
 
 function SlidersContainer() {
   const [juegos, setJuegos] = useState([])
-
+  const API_URL = import.meta.env.VITE_API_URL
   useEffect(() => {
-    fetch('http://localhost:3000/api/games')
+    fetch(`${API_URL}/api/games`)
       .then((res) => res.json())
       .then((data) => setJuegos(data))
       .catch((err) => console.error('Error al cargar juegos:', err))
@@ -50,8 +50,14 @@ function SlidersContainer() {
       <SliderCategoria titulo="Juegos de Aventura" juegos={juegosAventura} />
       <SliderCategoria titulo="Juegos de Acción" juegos={juegosAccion} />
       <SliderCategoria titulo="Juegos para Todos" juegos={juegosT} />
-      <SliderCategoria titulo="Los mejores juegos del 2000"  juegos={juegos2000}/>
-      <SliderCategoria titulo="Los mejores juegos moviles"juegos={juegosMovil}/>
+      <SliderCategoria
+        titulo="Los mejores juegos del 2000"
+        juegos={juegos2000}
+      />
+      <SliderCategoria
+        titulo="Los mejores juegos moviles"
+        juegos={juegosMovil}
+      />
       <SliderCategoria titulo="Juegos de PC" juegos={juegosPC} />
       <SliderCategoria titulo="Todo Público" juegos={juegosTodoPublico} />
     </div>

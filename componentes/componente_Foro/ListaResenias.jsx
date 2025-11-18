@@ -16,8 +16,8 @@ function ListaResenias() {
   useEffect(() => {
     setLoading(true)
     const timeout = setTimeout(() => setLoading(false), 7000)
-
-    fetch('http://localhost:3000/api/reviews')
+    const API_URL = import.meta.env.VITE_API_URL
+    fetch(`${API_URL}/api/reviews`)
       .then((res) => res.json())
       .then((data) => {
         setReseñas(data)

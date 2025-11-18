@@ -174,7 +174,7 @@ textarea:focus {
   flex-direction: column;
   gap: 0.3rem;
   overflow-y: scroll;
-  height: 400px;
+  max-height: 65vh;
 }
 
 .title-logro {
@@ -197,17 +197,17 @@ textarea:focus {
 
 .all-logros::-webkit-scrollbar-thumb {
   background:rgba(255, 255, 255, 0.1);
-
 }
 
 .item-logro {
   background-color: var(--color-bg-main);
   padding: 15px;
   width: 100%;
+  min-height: fit-content;
   border-radius: var(--radius-md);
   border: 1px solid rgba(212, 175, 55, 0.2);
   display: grid;
-  grid-template-columns: 60px 1fr;
+  grid-template-columns: 600px 1fr;
   grid-template-areas:
     'icon title'
     'icon desc'
@@ -234,9 +234,9 @@ textarea:focus {
   grid-area: desc;
 }
 
-.item-logro small:nth-child(4) {
+.item-logro small:nth-child(3) {
   grid-area: cond;
-  font-weight: 600;
+  font-weight: 60px;
   background-color: var(--color-outline);
   border-radius: 6px;
   padding: 4px 6px;

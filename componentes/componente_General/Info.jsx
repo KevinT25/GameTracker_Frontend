@@ -22,7 +22,7 @@ function InfoJuego({ setJuegos }) {
   const [user, setUser] = useState(null)
   const [reseñas, setReseñas] = useState([])
   const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
-
+  const API_URL = import.meta.env.VITE_API_URL
   // Obtener usuario desde localStorage
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -46,15 +46,14 @@ function InfoJuego({ setJuegos }) {
 
     const fetchData = async () => {
       try {
-        const resJuego = await fetch(
-          `http://localhost:3000/api/games/games/${id}`
-        )
+        const API_URL = import.meta.env.VITE_API_URL
+        const resJuego = await fetch(`${API_URL}/api/games/games/${id}`)
         if (!resJuego.ok)
           throw new Error('Error al obtener los datos del juego')
         let dataJuego = await resJuego.json()
 
         const resUserRelacion = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${userId}`
+          `${API_URL}/api/dataUser/usuario/${userId}`
         )
         if (!resUserRelacion.ok)
           throw new Error('Error al obtener relación del usuario')
@@ -127,7 +126,7 @@ function InfoJuego({ setJuegos }) {
       }
 
       const res = await fetch(
-        `http://localhost:3000/api/dataUser/usuario/${userId}/juego/${juegoId}`,
+        `${API_URL}/api/dataUser/usuario/${userId}/juego/${juegoId}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -169,17 +168,14 @@ function InfoJuego({ setJuegos }) {
     }
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/reviews/${reseñaId}/responder`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            respuesta: textoRespuesta,
-            usuarioId: user._id || user.id,
-          }),
-        }
-      )
+      const res = await fetch(`${API_URL}/api/reviews/${reseñaId}/responder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          respuesta: textoRespuesta,
+          usuarioId: user._id || user.id,
+        }),
+      })
 
       if (!res.ok) throw new Error('Error al enviar respuesta.')
 
@@ -252,9 +248,7 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'completado', !juego.completado)
           }
-          data-tooltip={`${
-            juego.completado ? 'Quitar' : 'Añadir'
-          } Completado `}
+          data-tooltip={`${juego.completado ? 'Quitar' : 'Añadir'} Completado `}
         >
           <img
             src={juego.completado ? iconCompletados : iconPorCompletar}

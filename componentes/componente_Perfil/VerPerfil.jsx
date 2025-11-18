@@ -15,16 +15,16 @@ function VerPerfil() {
 
     // Obtener datos del usuario visitado
     const obtenerUsuario = async () => {
-      const res = await fetch(`http://localhost:3000/api/users/users/${id}`)
+      const API_URL = import.meta.env.VITE_API_URL
+      const res = await fetch(`${API_URL}/api/users/users/${id}`)
       const data = await res.json()
       setUsuario(data)
     }
 
     // Obtener estadisticas del usuario visitado
     const obtenerStats = async () => {
-      const res = await fetch(
-        `http://localhost:3000/api/dataUser/usuario/${id}/stats`
-      )
+      const API_URL = import.meta.env.VITE_API_URL
+      const res = await fetch(`${API_URL}/api/dataUser/usuario/${id}/stats`)
       const data = await res.json()
       setStats(data)
     }

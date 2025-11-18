@@ -7,7 +7,6 @@ import tiempoCarga1 from './../../../assets/loadingGif/tiempoCarga1.gif'
 function BibliotecaJuegos() {
   const [juegos, setJuegos] = useState([])
   const [loading, setLoading] = useState(true)
-  
 
   useEffect(() => {
     setLoading(true)
@@ -15,8 +14,8 @@ function BibliotecaJuegos() {
     const timeout = setTimeout(() => {
       setLoading(true)
     }, 5000)
-
-    fetch('http://localhost:3000/api/games')
+    const API_URL = import.meta.env.VITE_API_URL
+    fetch(`${API_URL}/api/games`)
       .then((res) => res.json())
       .then((data) => setJuegos(data), setLoading(false))
       .catch((err) => {

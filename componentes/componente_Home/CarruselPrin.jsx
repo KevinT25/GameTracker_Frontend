@@ -9,7 +9,7 @@ function SliderCarruselPrincipal() {
   const [loading, setLoading] = useState(true)
   const [indice, setIndice] = useState(0)
   const navigate = useNavigate()
-
+  const API_URL = import.meta.env.VITE_API_URL
   useEffect(() => {
     setLoading(true)
 
@@ -17,7 +17,7 @@ function SliderCarruselPrincipal() {
       setLoading(true)
     }, 7000)
 
-    fetch('http://localhost:3000/api/games')
+    fetch(`${API_URL}/api/games`)
       .then((res) => res.json())
       .then((data) => {
         const aleatorios = [...data].sort(() => Math.random() - 0.5).slice(0, 5)
@@ -39,7 +39,7 @@ function SliderCarruselPrincipal() {
   }, [juegosRecomendados])
 
   if (loading) return <Loader imagen={tiempoCarga2} />
-  
+
   return (
     <section className="slider-carrusel">
       {juegosRecomendados.map((juego, i) => (

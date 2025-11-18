@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 function Noticies() {
   const [noticias, setNoticias] = useState([])
   const [nueva, setNueva] = useState({ encabezado: '', texto: '', imagen: '' })
-
+  const API_URL = import.meta.env.VITE_API_URL
   // Obtener todas las noticias
   useEffect(() => {
-    fetch('http://localhost:3000/api/noticias')
+    const API_URL = import.meta.env.VITE_API_URL
+    fetch(`${API_URL}/api/noticias`)
       .then((res) => res.json())
       .then((data) => setNoticias(data))
       .catch((err) => console.error(err))
@@ -16,13 +17,13 @@ function Noticies() {
   // Agregar una noticia
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const res = await fetch('http://localhost:3000/api/noticias', {
+    const res = await fetch(`${API_URL}/api/noticias`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(nueva),
     })
     const data = await res.json()
-    setNoticias([data, ...noticias]) 
+    setNoticias([data, ...noticias])
     setNueva({ encabezado: '', texto: '', imagen: '' })
   }
   return (

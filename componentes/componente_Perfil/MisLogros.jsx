@@ -7,6 +7,7 @@ function MisLogros() {
   const [logrosVisibles, setLogrosVisibles] = useState(4)
   const [logroActivo, setLogroActivo] = useState(null)
 
+  const API_URL = import.meta.env.VITE_API_URL
   const { id } = useParams()
 
   const cargarLogros = useCallback(async () => {
@@ -20,7 +21,7 @@ function MisLogros() {
     if (!uid) return
 
     try {
-      const res = await fetch(`http://localhost:3000/api/usuario/${uid}/logros`)
+      const res = await fetch(`${API_URL}/api/usuario/${uid}/logros`)
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
       if (Array.isArray(data)) {

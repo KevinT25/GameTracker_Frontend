@@ -10,10 +10,12 @@ function Foro() {
 
   // Obtener todas las noticias
   useEffect(() => {
-    fetch('http://localhost:3000/api/noticias')
+    const API_URL = import.meta.env.VITE_API_URL
+
+    fetch(`${API_URL}/api/noticias`)
       .then((res) => res.json())
       .then((data) => setNoticias(data))
-      .catch((err) => console.error(err))
+      .catch((err) => console.error('Error obteniendo noticias:', err))
   }, [])
 
   const subirNoticie = () => {

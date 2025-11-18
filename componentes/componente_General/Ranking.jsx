@@ -28,14 +28,13 @@ function Ranking() {
   const [misStats, setMisStats] = useState(null)
   const [mostrarMiRanking, setMostrarMiRanking] = useState(false)
   const [usuarioId, setUsuarioId] = useState(null)
-
+  
   // Cargar ranking general
   useEffect(() => {
     const cargarRanking = async () => {
       try {
-        const res = await fetch(
-          'http://localhost:3000/api/dataUser/leaderboard'
-        )
+        const API_URL = import.meta.env.VITE_API_URL
+        const res = await fetch(`${API_URL}/api/dataUser/leaderboard`)
         if (!res.ok) throw new Error('Error al cargar ranking')
         const data = await res.json()
         setRankingData(data)
@@ -59,9 +58,8 @@ function Ranking() {
 
     const cargarMisStats = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${uid}/stats`
-        )
+        const API_URL = import.meta.env.VITE_API_URL
+        const res = await fetch(`${API_URL}/api/dataUser/usuario/${uid}/stats`)
         const data = await res.json()
         setMisStats(data)
       } catch (err) {
@@ -86,8 +84,6 @@ function Ranking() {
 
     return { miPuesto: index + 1 }
   }
-
-
 
   return (
     <div className="ranking">

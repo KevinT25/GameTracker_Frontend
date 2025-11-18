@@ -12,7 +12,8 @@ function MisJuegos() {
   const [estadoJuego, setEstadoJuego] = useState('')
   const [error, setError] = useState(null)
   const navigate = useNavigate()
-
+  
+  const API_URL = import.meta.env.VITE_API_URL
   const { id } = useParams()
   // Obtener juegos del usuario correcto
   useEffect(() => {
@@ -26,7 +27,7 @@ function MisJuegos() {
 
     if (!uid) return
 
-    fetch(`http://localhost:3000/api/datauser/usuario/${uid}`)
+    fetch(`${API_URL}/api/datauser/usuario/${uid}`)
       .then((res) => {
         if (!res.ok) throw new Error('No se pudieron obtener los juegos')
         return res.json()

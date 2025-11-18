@@ -22,7 +22,7 @@ function Confi() {
   const [contrasenia, setContrasenia] = useState('')
   // logros
   const [logros, setLogros] = useState([])
-
+  const API_URL = import.meta.env.VITE_API_URL
   const navigate = useNavigate()
 
   const cargarUsuario = () => {
@@ -48,9 +48,7 @@ function Confi() {
     const uid = user?.id || user?._id
     if (!uid) return
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/games?facilitador=${uid}`
-      )
+      const res = await fetch(`${API_URL}/api/games?facilitador=${uid}`)
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
       setJuegos(data)
@@ -82,7 +80,7 @@ function Confi() {
       facilitador: uid,
     }
     try {
-      const res = await fetch('http://localhost:3000/api/games', {
+      const res = await fetch(`${API_URL}/api/games`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nuevoJuego),
@@ -110,14 +108,11 @@ function Confi() {
       descripcion,
     }
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/games/games/${editandoId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(actualizado),
-        }
-      )
+      const res = await fetch(`${API_URL}/api/games/games/${editandoId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(actualizado),
+      })
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
       setJuegos((prev) => prev.map((p) => (p._id === editandoId ? data : p)))
@@ -155,7 +150,7 @@ function Confi() {
   const actualizarCuenta = async () => {
     const id = user.id || user._id
     try {
-      const res = await fetch(`http://localhost:3000/api/users/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/users/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, contrasenia }),
@@ -182,7 +177,7 @@ function Confi() {
     if (!confirm('¿Eliminar tu cuenta permanentemente?')) return
     const id = user.id || user._id
     try {
-      const res = await fetch(`http://localhost:3000/api/users/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/users/users/${id}`, {
         method: 'DELETE',
       })
       if (!res.ok) throw new Error(await res.text())
@@ -215,7 +210,7 @@ function Confi() {
     const cargarLogros = async () => {
       try {
         // Cargar todos los logros
-        const resAll = await fetch('http://localhost:3000/api/achievements')
+        const resAll = await fetch(`${API_URL}/api/achievements`)
         if (!resAll.ok) throw new Error('Error al cargar logros generales')
         const todosLogros = await resAll.json()
 
@@ -225,10 +220,7 @@ function Confi() {
           setLogros(todosLogros)
           return
         }
-
-        const resUnlocked = await fetch(
-          `http://localhost:3000/api/usuario/${uid}/logros`
-        )
+        const resUnlocked = await fetch(`${API_URL}/api/usuario/${uid}/logros`)
         if (!resUnlocked.ok)
           throw new Error('Error al cargar logros desbloqueados')
         const logrosDesbloqueados = await resUnlocked.json()
@@ -351,8 +343,6 @@ function Confi() {
             </div>
           ))}
         </div>
-
-        
       </section>
 
       <section className="confi-cuenta">
@@ -398,14 +388,16 @@ function Confi() {
                 logro.desbloqueado ? 'activo' : 'bloqueado'
               }`}
             >
-              <strong>{logro.nombre}</strong>
-              <p>{logro.descripcion}</p>
               <img
                 src={logro.icono}
                 alt={logro.nombre}
-                className="sin-logros"
+                className="img-logros"
               />
-              <small>{logro.condicion}</small>
+              <div>
+                <strong>{logro.nombre}</strong>
+                <p>{logro.descripcion}</p>
+                <small>{logro.condicion}</small>
+              </div>
             </div>
           ))
         ) : (

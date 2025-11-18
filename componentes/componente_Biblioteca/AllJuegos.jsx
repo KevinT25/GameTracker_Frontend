@@ -72,10 +72,9 @@ function AllJuegos({ juegos = [], setJuegos }) {
 
     const fetchData = async () => {
       try {
+        const API_URL = import.meta.env.VITE_API_URL
         const userId = user._id || user.id
-        const res = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${userId}`
-        )
+        const res = await fetch(`${API_URL}/api/dataUser/usuario/${userId}`)
         if (!res.ok) throw new Error(`Error HTTP ${res.status}`)
         const dataUser = await res.json()
         if (!Array.isArray(dataUser) || cancelled) return
@@ -89,7 +88,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
               return idJuego === j._id
             })
 
-            if (!relacion) return j 
+            if (!relacion) return j
 
             return {
               ...j,
@@ -109,7 +108,6 @@ function AllJuegos({ juegos = [], setJuegos }) {
       cancelled = true
     }
   }, [user, juegos, setJuegos])
-
 
   // Filtrado y ordenamiento
   const filteredAndSorted = useMemo(() => {
@@ -228,10 +226,10 @@ function AllJuegos({ juegos = [], setJuegos }) {
         navigate('/perfil')
         return
       }
-
+      const API_URL = import.meta.env.VITE_API_URL
       // Ejecutar la petición al backend
       const res = await fetch(
-        `http://localhost:3000/api/dataUser/usuario/${userId}/juego/${juegoId}`,
+        `${API_URL}/api/dataUser/usuario/${userId}/juego/${juegoId}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

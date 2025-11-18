@@ -25,8 +25,9 @@ function Perfil() {
 
     const obtenerEstadisticas = async () => {
       try {
+        const API_URL = import.meta.env.VITE_API_URL
         const response = await fetch(
-          `http://localhost:3000/api/dataUser/usuario/${uid}/stats`
+          `${API_URL}/api/dataUser/usuario/${uid}/stats`
         )
         const data = await response.json()
         setStats(data)
