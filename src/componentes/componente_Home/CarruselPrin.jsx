@@ -16,7 +16,7 @@ function SliderCarruselPrincipal() {
     const timeout = setTimeout(() => {
       setLoading(true)
     }, 7000)
-
+    console.log(API_URL)
     fetch(`${API_URL}/api/games`)
       .then((res) => res.json())
       .then((data) => {
