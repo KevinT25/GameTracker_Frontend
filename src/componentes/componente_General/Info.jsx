@@ -89,9 +89,7 @@ function InfoJuego({ setJuegos }) {
         setLoading(false)
 
         // Cargar reseñas del juego
-        const resReseñas = await fetch(
-          `http://localhost:3000/api/reviews/game/${id}`
-        )
+        const resReseñas = await fetch(`${API_URL}/api/reviews/game/${id}`)
         if (resReseñas.ok) {
           const dataReseñas = await resReseñas.json()
           setReseñas(dataReseñas)

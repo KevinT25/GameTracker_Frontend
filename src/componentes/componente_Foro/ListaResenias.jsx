@@ -53,17 +53,14 @@ function ListaResenias() {
     const userId = user._id || user.id
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/reviews/${idReseña}/responder`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            respuesta,
-            usuarioId: userId,
-          }),
-        }
-      )
+      const res = await fetch(`${API_URL}/api/reviews/${idReseña}/responder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          respuesta,
+          usuarioId: userId,
+        }),
+      })
 
       const data = await res.json()
 
