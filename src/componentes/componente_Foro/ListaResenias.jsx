@@ -12,6 +12,7 @@ function ListaResenias() {
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate()
 
+  const API_URL = import.meta.env.VITE_API_URL
   // Cargar reseñas
   useEffect(() => {
     setLoading(true)
@@ -123,7 +124,9 @@ function ListaResenias() {
                         {r.juegoId?.titulo}
                       </strong>
                       <button
-                        onDoubleClick={() => verPerfil(r.usuarioId._id)}
+                        onDoubleClick={() =>
+                          verPerfil(r.usuarioId?._id || r.usuarioId)
+                        }
                         className="btn-amigo"
                         data-tooltip="Visitar perfil"
                       >

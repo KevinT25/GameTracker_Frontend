@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 function Confi() {
   const [juegos, setJuegos] = useState([])
   const [editandoId, setEditandoId] = useState(null)
+
   // campos juego
   const [titulo, setTitulo] = useState('')
   const [genero, setGenero] = useState('')
@@ -14,14 +15,17 @@ function Confi() {
   const [desarrollador, setDesarrollador] = useState('')
   const [imagenPortada, setImagenPortada] = useState('')
   const [descripcion, setDescripcion] = useState('')
+
   // cuenta
   const [IsLoginOpen, setIsLoginOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
   const [contrasenia, setContrasenia] = useState('')
+
   // logros
   const [logros, setLogros] = useState([])
+
   const API_URL = import.meta.env.VITE_API_URL
   const navigate = useNavigate()
 
@@ -51,7 +55,11 @@ function Confi() {
       const res = await fetch(`${API_URL}/api/games?facilitador=${uid}`)
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
-      setJuegos(data)
+
+      // protección por si vienen nulls desde el backend
+      const filtrados = data.filter((g) => g && g._id)
+
+      setJuegos(filtrados)
     } catch (err) {
       console.error('Error cargando juegos:', err)
     }
@@ -86,9 +94,8 @@ function Confi() {
         body: JSON.stringify(nuevoJuego),
       })
       if (!res.ok) throw new Error(await res.text())
-      const data = await res.json()
-      await fetchJuegos()
-      setJuegos(() => [data])
+
+      await fetchJuegos() // ← YA NO borra la lista
       limpiarFormularioJuego()
     } catch (err) {
       console.error('Error creando juego:', err)
@@ -115,6 +122,7 @@ function Confi() {
       })
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
+
       setJuegos((prev) => prev.map((p) => (p._id === editandoId ? data : p)))
       setEditandoId(null)
       limpiarFormularioJuego()
@@ -124,6 +132,8 @@ function Confi() {
   }
 
   const prepararEdicion = (juego) => {
+    if (!juego) return
+
     setEditandoId(juego._id)
     setTitulo(juego.titulo || '')
     setGenero(juego.genero || '')
@@ -146,7 +156,7 @@ function Confi() {
     setDescripcion('')
   }
 
-  // --- Cuenta (editar / eliminar) ---
+  // --- Cuenta ---
   const actualizarCuenta = async () => {
     const id = user.id || user._id
     try {
@@ -157,7 +167,7 @@ function Confi() {
       })
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
-      // actualizar localStorage y estado
+
       localStorage.setItem(
         'user',
         JSON.stringify({
@@ -166,6 +176,7 @@ function Confi() {
           email: data.email,
         })
       )
+
       cargarUsuario()
       alert('Cuenta actualizada')
     } catch (err) {
@@ -181,9 +192,8 @@ function Confi() {
         method: 'DELETE',
       })
       if (!res.ok) throw new Error(await res.text())
-      // limpiar sesión y redirigir
+
       localStorage.removeItem('user')
-      window.dispatchEvent(new Event('userChange'))
       setUser(null)
       alert('Cuenta eliminada')
       navigate('/')
@@ -194,14 +204,12 @@ function Confi() {
 
   const cerrarSesion = () => {
     localStorage.removeItem('user')
-    window.dispatchEvent(new Event('userChange'))
     setUser(null)
     setNombre('')
     setEmail('')
     setContrasenia('')
     setJuegos([])
     navigate('/')
-
     alert('Has cerrado sesión correctamente.')
   }
 
@@ -209,23 +217,22 @@ function Confi() {
   useEffect(() => {
     const cargarLogros = async () => {
       try {
-        // Cargar todos los logros
         const resAll = await fetch(`${API_URL}/api/achievements`)
         if (!resAll.ok) throw new Error('Error al cargar logros generales')
         const todosLogros = await resAll.json()
 
-        // Si hay usuario logeado, cargar los desbloqueados
         const uid = user?.id || user?._id
         if (!uid) {
           setLogros(todosLogros)
           return
         }
+
         const resUnlocked = await fetch(`${API_URL}/api/usuario/${uid}/logros`)
         if (!resUnlocked.ok)
           throw new Error('Error al cargar logros desbloqueados')
+
         const logrosDesbloqueados = await resUnlocked.json()
 
-        // Marcar los desbloqueados
         const idsDesbloqueados = new Set(logrosDesbloqueados.map((l) => l._id))
         const logrosConEstado = todosLogros.map((l) => ({
           ...l,
@@ -251,44 +258,37 @@ function Confi() {
             placeholder="Título"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
-            required
           />
           <input
             placeholder="Género"
             value={genero}
             onChange={(e) => setGenero(e.target.value)}
-            required
           />
           <input
             placeholder="Plataforma"
             value={plataforma}
             onChange={(e) => setPlataforma(e.target.value)}
-            required
           />
           <input
             placeholder="Año lanzamiento"
             value={anioLanzamiento}
             onChange={(e) => setAnioLanzamiento(e.target.value)}
-            required
           />
           <input
             placeholder="Clasificación"
             value={clasificacionEdad}
             onChange={(e) => setClasificacionEdad(e.target.value)}
-            required
           />
           <input
             placeholder="Desarrollador"
             value={desarrollador}
             onChange={(e) => setDesarrollador(e.target.value)}
-            required
           />
           <input
             placeholder="URL imagen portada"
             value={imagenPortada}
             onChange={(e) => setImagenPortada(e.target.value)}
             className="url-confi"
-            required
           />
           <textarea
             placeholder="Descripción"
@@ -322,26 +322,32 @@ function Confi() {
 
         <h3>Lista de juegos</h3>
         <div className="lista-juegos">
-          {juegos.map((g) => (
-            <div key={g._id} className="item-juego">
-              <img
-                src={g?.imagenPortada || '/placeholder.jpg'}
-                alt={g?.titulo || 'Sin título'}
-                className="mini-portada"
-              />
-              <div className="meta">
-                <strong>{g.titulo}</strong>
-                <small>
-                  {g.genero} • {g.desarrollador}
-                </small>
+          {juegos.map((g) => {
+            if (!g) return null
+            return (
+              <div key={g._id} className="item-juego">
+                <img
+                  src={g?.imagenPortada || '/placeholder.jpg'}
+                  alt={g?.titulo || 'Sin título'}
+                  className="mini-portada"
+                />
+                <div className="meta">
+                  <strong>{g.titulo}</strong>
+                  <small>
+                    {g.genero} • {g.desarrollador}
+                  </small>
+                </div>
+                <div className="actions">
+                  <button
+                    onClick={() => prepararEdicion(g)}
+                    className="btn-gold"
+                  >
+                    Editar
+                  </button>
+                </div>
               </div>
-              <div className="actions">
-                <button onClick={() => prepararEdicion(g)} className="btn-gold">
-                  Editar
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
@@ -373,7 +379,7 @@ function Confi() {
             Eliminar cuenta
           </button>
           <button onClick={cerrarSesion} className="danger">
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
       </section>
