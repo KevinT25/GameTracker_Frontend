@@ -83,8 +83,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
         setJuegos((prev) =>
           prev.map((j) => {
             const relacion = dataUser.find((d) => {
-              const idJuego =
-                typeof d.juegoId === 'object' ? d.juegoId._id : d.juegoId
+              const idJuego = d?.juegoId?._id ?? d?.juegoId
               return idJuego === j._id
             })
 
