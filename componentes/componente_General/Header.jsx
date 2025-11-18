@@ -100,6 +100,15 @@ function Headers() {
             </Link>
           </li>
           <li>
+            <Link
+              to="/Ranking"
+              className="boton-gremio"
+              onClick={() => setOpen(false)}
+            >
+              Ranking
+            </Link>
+          </li>
+          <li>
             {!user ? (
               <button
                 className="boton-gremio"
