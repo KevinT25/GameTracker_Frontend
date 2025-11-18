@@ -52,6 +52,7 @@ function Confi() {
     const uid = user?.id || user?._id
     if (!uid) return
     try {
+      const API_URL = import.meta.env.VITE_API_URL
       const res = await fetch(`${API_URL}/api/games?facilitador=${uid}`)
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
@@ -88,6 +89,7 @@ function Confi() {
       facilitador: uid,
     }
     try {
+      const API_URL = import.meta.env.VITE_API_URL
       const res = await fetch(`${API_URL}/api/games`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,6 +117,7 @@ function Confi() {
       descripcion,
     }
     try {
+      const API_URL = import.meta.env.VITE_API_URL
       const res = await fetch(`${API_URL}/api/games/games/${editandoId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -160,6 +163,7 @@ function Confi() {
   const actualizarCuenta = async () => {
     const id = user.id || user._id
     try {
+      const API_URL = import.meta.env.VITE_API_URL
       const res = await fetch(`${API_URL}/api/users/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
