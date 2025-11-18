@@ -63,8 +63,7 @@ function InfoJuego({ setJuegos }) {
 
         const relacion = Array.isArray(dataUser)
           ? dataUser.find((d) => {
-              const idJuego =
-                typeof d.juegoId === 'object' ? d.juegoId._id : d.juegoId
+              const idJuego = d?.juegoId?._id ?? d?.juegoId
               return idJuego === dataJuego._id
             })
           : null

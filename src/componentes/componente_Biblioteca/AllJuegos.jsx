@@ -86,6 +86,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
               const idJuego = d?.juegoId?._id ?? d?.juegoId
               return idJuego === j._id
             })
+            console.log(relacion)
 
             if (!relacion) return j
 
