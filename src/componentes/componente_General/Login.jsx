@@ -11,20 +11,21 @@ function Login({ isOpen, onClose }) {
   })
   const [error, setError] = useState('')
   const navigate = useNavigate()
-  const API_URL = import.meta.env.VITE_API_URL
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
     try {
+      const API_URL = import.meta.env.VITE_API_URL
       const endpoint = isLogin ? '/api/users/login' : '/api/users'
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
-
+      console.log(API_URL)
+      console.log(endpoint)
       const data = await res.json()
 
       if (!res.ok) {
@@ -40,10 +41,10 @@ function Login({ isOpen, onClose }) {
         const userId = userData.id || userData._id
         const logroId = '690f9aa32b89ad388ddc677a'
         try {
-          // Verificamos si ya tiene Datauser (es decir, si ya había iniciado antes)
+          const API_URL = import.meta.env.VITE_API_URL
           const check = await fetch(`${API_URL}/api/dataUser/usuario/${userId}`)
           if (check.status === 404 || check.status === 400) {
-            // No tiene registro → primer inicio → damos el logro
+            const API_URL = import.meta.env.VITE_API_URL
             await fetch(
               `${API_URL}/api/dataUser/usuario/${userId}/logros/${logroId}`,
               {
