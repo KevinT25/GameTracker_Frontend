@@ -3,6 +3,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authFetch } from '../../helpers/authFetch'
 
+// 🔥 CAMBIO: importar eventos globales
+import {
+  eventoAuth,
+  eventoActualizarHeader,
+} from '../../event_Global/globalEvents'
+
 function Login({ isOpen, onClose }) {
   const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState({
@@ -21,7 +27,6 @@ function Login({ isOpen, onClose }) {
 
     try {
       const endpoint = isLogin ? '/api/users/login' : '/api/users'
-
 
       // LOGIN o REGISTRO
       const res = await fetch(`${API_URL}${endpoint}`, {
@@ -42,9 +47,13 @@ function Login({ isOpen, onClose }) {
         localStorage.setItem('token', data.token)
       }
 
-      // Guardar user
+      // Guardar usuario
       const userData = data.user || data
       localStorage.setItem('user', JSON.stringify(userData))
+
+      // 🔥 CAMBIO: emitir evento de login y actualización global
+      eventoAuth.emitir(true)
+      eventoActualizarHeader.emitir()
 
       // OTORGAR LOGRO (solo login)
       if (isLogin) {
@@ -52,7 +61,6 @@ function Login({ isOpen, onClose }) {
         const logroId = '690f9aa32b89ad388ddc677a'
 
         try {
-          // Verificar si existe dataUser
           const check = await authFetch(
             `${API_URL}/api/dataUser/usuario/${userId}`
           )
@@ -69,7 +77,7 @@ function Login({ isOpen, onClose }) {
         }
       }
 
-      // CERRAR MODAL Y NAVEGAR
+      // cerrar modal y navegar
       onClose()
       navigate('/perfil')
     } catch {
@@ -121,6 +129,7 @@ function Login({ isOpen, onClose }) {
             onChange={handleInputChange}
             required
           />
+
           <input
             className="inpunt"
             type="password"
@@ -138,7 +147,7 @@ function Login({ isOpen, onClose }) {
 
         <button onClick={() => setIsLogin(!isLogin)} className="btn-switch">
           {isLogin
-            ? '¿No tienes cuenta? Unetenos'
+            ? '¿No tienes cuenta? Únetenos'
             : '¿Ya tienes cuenta? Ingresa'}
         </button>
       </div>

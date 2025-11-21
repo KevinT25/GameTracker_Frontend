@@ -225,8 +225,8 @@ function AllJuegos({ juegos = [], setJuegos }) {
 
       // Si no hay userId
       if (!userId) {
-        console.error('Usuario no logueado')
-        navigate('/perfil')
+        console.warn('Usuario no logueado, abriendo modal...')
+        window.dispatchEvent(new Event('openLoginModal'))
         return
       }
 

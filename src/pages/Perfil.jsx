@@ -18,7 +18,7 @@ function Perfil() {
 
     // Si NO existe user en localStorage Y tampoco hay ID en la URL
     if (!userData && !id) {
-      navigate('/login')
+      navigate('/perfil')
       return
     }
   }, [id, navigate])

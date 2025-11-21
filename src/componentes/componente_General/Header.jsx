@@ -5,13 +5,21 @@ import iconIngresar from '../../assets/Icons/iconIngresar.png'
 import iconRegistro from '../../assets/Icons/iconRegistro.png'
 import Login from './Login'
 
+// IMPORTAMOS EVENTOS
+import {
+  escucharEvento,
+  dejarDeEscuchar,
+  eventoAuth,
+  eventoActualizarHeader,
+} from '../../event_Global/globalEvents'
+
 function Headers() {
   const [open, setOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [user, setUser] = useState(null)
   const navRef = useRef(null)
 
-  //redireccion a perfil
+  // cargar usuario al iniciar
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (userData) {
@@ -19,17 +27,40 @@ function Headers() {
     }
   }, [])
 
+  // EVENTO GLOBAL: login / logout
   useEffect(() => {
-    const handleUserChange = () => {
+    const handleAuthChange = (e) => {
+      const { logueado } = e.detail
+      if (!logueado) {
+        setUser(null)
+        return
+      }
       const userData = localStorage.getItem('user')
       setUser(userData ? JSON.parse(userData) : null)
     }
 
-    window.addEventListener('userChange', handleUserChange)
-    return () => window.removeEventListener('userChange', handleUserChange)
+    escucharEvento(eventoAuth.nombre, handleAuthChange)
+
+    return () => {
+      dejarDeEscuchar(eventoAuth.nombre, handleAuthChange)
+    }
   }, [])
 
-  // cerrar menu hamburguesa
+  // EVENTO GLOBAL: refrescar header
+  useEffect(() => {
+    const handleHeaderUpdate = () => {
+      const userData = localStorage.getItem('user')
+      setUser(userData ? JSON.parse(userData) : null)
+    }
+
+    escucharEvento(eventoActualizarHeader.nombre, handleHeaderUpdate)
+
+    return () => {
+      dejarDeEscuchar(eventoActualizarHeader.nombre, handleHeaderUpdate)
+    }
+  }, [])
+
+  // cerrar el menú hamburguesa con ESC o click fuera
   useEffect(() => {
     function onKey(e) {
       if (e.key === 'Escape') setOpen(false)
@@ -130,16 +161,8 @@ function Headers() {
           </li>
         </ul>
       </nav>
-      <Login
-        isOpen={isLoginOpen}
-        onClose={() => {
-          setIsLoginOpen(false)
-          const userData = localStorage.getItem('user')
-          if (userData) {
-            setUser(JSON.parse(userData))
-          }
-        }}
-      />
+
+      <Login isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </div>
   )
 }

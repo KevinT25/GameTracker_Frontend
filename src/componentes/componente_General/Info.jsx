@@ -2,6 +2,11 @@ import './../../styles/Info.css'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { authFetch } from '../../helpers/authFetch'
+import {
+  escucharEvento,
+  dejarDeEscuchar,
+  eventoAuth,
+} from '../../event_Global/events'
 
 import FormularioResenias from '../componente_Foro/FormularioResenia'
 import Respuesta from '../componente_Foro/Respuesta'
@@ -133,6 +138,28 @@ function InfoJuego({ setJuegos }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user ? user._id || user.id : null])
 
+  // Escuchar evento global de login/logout
+  useEffect(() => {
+    const manejarAuth = (e) => {
+      const logueado = e.detail?.logueado
+
+      if (logueado) {
+        // Si el usuario inicia sesión → cargar desde localStorage
+        const u = JSON.parse(localStorage.getItem('user') || 'null')
+        setUser(u)
+      } else {
+        // Si cierra sesión
+        setUser(null)
+      }
+    }
+
+    escucharEvento(eventoAuth.nombre, manejarAuth)
+
+    return () => {
+      dejarDeEscuchar(eventoAuth.nombre, manejarAuth)
+    }
+  }, [])
+  console.log(e.detail?.logueado)
   // Actualizar estado usuario-juego
   const actualizarEstado = async (juegoId, campo, valor) => {
     try {
