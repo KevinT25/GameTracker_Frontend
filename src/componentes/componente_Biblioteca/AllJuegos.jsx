@@ -212,7 +212,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
 
   const actualizarEstado = async (juegoId, campo, valor) => {
     try {
-      // 1. Obtener userId desde contexto o localStorage
+      // Obtener userId desde contexto o localStorage
       let userId = user?._id || user?.id
 
       if (!userId) {
@@ -223,7 +223,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
         }
       }
 
-      // 2. Si no hay userId
+      // Si no hay userId
       if (!userId) {
         console.error('Usuario no logueado')
         navigate('/perfil')
@@ -232,7 +232,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
 
       const API_URL = import.meta.env.VITE_API_URL
 
-      // 3. Usar authFetch para enviar el token automáticamente
+      // Usar authFetch para enviar el token automáticamente
       const res = await authFetch(
         `${API_URL}/api/dataUser/usuario/${userId}/juego/${juegoId}`,
         {
