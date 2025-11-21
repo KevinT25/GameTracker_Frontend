@@ -45,8 +45,8 @@ function ListaResenias() {
   const enviarRespuesta = async (idReseña, respuesta) => {
     const storedUser = localStorage.getItem('user')
     if (!storedUser) {
-      console.error('Usuario no logueado')
-      navigate('/perfil')
+      console.warn('Usuario no logueado, abriendo modal...')
+      window.dispatchEvent(new Event('openLoginModal'))
       return
     }
 
