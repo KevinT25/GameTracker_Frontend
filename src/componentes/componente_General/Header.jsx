@@ -60,6 +60,19 @@ function Headers() {
     }
   }, [])
 
+  useEffect(() => {
+    const abrirModalLogin = () => {
+      console.log('Evento global: abrir login modal')
+      setIsLoginOpen(true)
+    }
+
+    window.addEventListener('openLoginModal', abrirModalLogin)
+
+    return () => {
+      window.removeEventListener('openLoginModal', abrirModalLogin)
+    }
+  }, [])
+
   // cerrar el menú hamburguesa con ESC o click fuera
   useEffect(() => {
     function onKey(e) {

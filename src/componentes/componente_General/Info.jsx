@@ -6,7 +6,7 @@ import {
   escucharEvento,
   dejarDeEscuchar,
   eventoAuth,
-} from '../../event_Global/events'
+} from '../../event_Global/globalEvents'
 
 import FormularioResenias from '../componente_Foro/FormularioResenia'
 import Respuesta from '../componente_Foro/Respuesta'
