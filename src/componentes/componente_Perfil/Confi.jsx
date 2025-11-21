@@ -1,6 +1,8 @@
 import '../../styles/confi.css'
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { eventoAuth } from '../../event_global/eventoAuth'
+import { eventoActualizarHeader } from '../../event_global/eventoActualizarHeader'
 
 function Confi() {
   const [juegos, setJuegos] = useState([])
@@ -33,18 +35,18 @@ function Confi() {
     try {
       const raw = localStorage.getItem('user')
       if (!raw) {
+        // Aquí NO hacemos nada más, porque Confi jamás puede abrir sin login
         setUser(null)
-        setIsLoginOpen(true)
         return
       }
+
       const parsed = JSON.parse(raw)
       setUser(parsed)
       setNombre(parsed.nombre || '')
       setEmail(parsed.email || '')
     } catch (err) {
-      console.error('Error leyendo user desde localStorage', err)
+      console.error('Error leyendo usuario desde localStorage', err)
       setUser(null)
-      setIsLoginOpen(true)
     }
   }
 
@@ -162,14 +164,16 @@ function Confi() {
   // --- Cuenta ---
   const actualizarCuenta = async () => {
     const id = user.id || user._id
+
     try {
-      const API_URL = import.meta.env.VITE_API_URL
       const res = await fetch(`${API_URL}/api/users/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, contrasenia }),
       })
+
       if (!res.ok) throw new Error(await res.text())
+
       const data = await res.json()
 
       localStorage.setItem(
@@ -180,32 +184,41 @@ function Confi() {
           email: data.email,
         })
       )
+
       cargarUsuario()
+
       alert('Cuenta actualizada')
     } catch (err) {
       console.error('Error actualizando cuenta:', err)
     }
   }
 
+
   const eliminarCuenta = async () => {
     if (!confirm('¿Eliminar tu cuenta permanentemente?')) return
+
     const id = user.id || user._id
+
     try {
       const res = await fetch(`${API_URL}/api/users/users/${id}`, {
         method: 'DELETE',
       })
+
       if (!res.ok) throw new Error(await res.text())
 
       localStorage.removeItem('user')
       setUser(null)
-      alert('Cuenta eliminada')
-      navigate('/')
+
       eventoAuth.emitir(false)
       eventoActualizarHeader.emitir()
+
+      alert('Cuenta eliminada')
+      navigate('/')
     } catch (err) {
       console.error('Error eliminando cuenta:', err)
     }
   }
+
 
   const cerrarSesion = () => {
     localStorage.removeItem('user')
@@ -214,11 +227,14 @@ function Confi() {
     setEmail('')
     setContrasenia('')
     setJuegos([])
+
     eventoAuth.emitir(false)
     eventoActualizarHeader.emitir()
-    navigate('/')
+
     alert('Has cerrado sesión correctamente.')
+    navigate('/')
   }
+
 
   // --- Logros -------
   useEffect(() => {
