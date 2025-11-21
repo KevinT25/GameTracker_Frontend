@@ -450,7 +450,7 @@
   cursor: pointer;
   padding: 10px 20px;
   font-family: var(--font-title);
-  font-size: var(--font-size-navbar);
+  font-size: clamp(12px ,var(--font-size-navbar), 25px);
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   border-radius: var(--radius-md);
