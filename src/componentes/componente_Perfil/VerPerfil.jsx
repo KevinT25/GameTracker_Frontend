@@ -28,7 +28,7 @@ function VerPerfil() {
         setUsuario(null) // Evitar crash
       }
     }
-
+    console.log('actualizado')
     // --- Obtener Stats ---
     const obtenerStats = async () => {
       try {
@@ -39,7 +39,7 @@ function VerPerfil() {
         setStats(data)
       } catch (err) {
         console.error('Error cargando stats:', err)
-        setStats(null) // no romper UI
+        setStats(null)
       }
     }
 
@@ -48,19 +48,19 @@ function VerPerfil() {
   }, [id])
   return (
     <div>
-        <Status userId={id} />
+      <Status userId={id} />
       <div className="hr"></div>
-        {stats ? (
+      {stats ? (
         <div className="estadisticas-right">
           <Estadisticas stats={stats} />
         </div>
-        ) : (
-          <p className="cargando">Cargando estadísticas...</p>
-        )}
+      ) : (
+        <p className="cargando">Cargando estadísticas...</p>
+      )}
       <div className="hr"></div>
-        <MisJuegos userId={id} />
+      <MisJuegos userId={id} />
       <div className="hr"></div>
-        <MisLogros userId={id} />
+      <MisLogros userId={id} />
     </div>
   )
 }

@@ -12,17 +12,15 @@ function Perfil() {
 
   const navigate = useNavigate()
 
-  // alidación principal: si no hay usuario → redirigir a login
   useEffect(() => {
     const userData = localStorage.getItem('user')
 
-    // Si NO existe user en localStorage Y tampoco hay ID en la URL
     if (!userData && !id) {
       navigate('/perfil')
       return
     }
   }, [id, navigate])
-  console.log('actualizado')
+  
   useEffect(() => {
     let uid = id
 
