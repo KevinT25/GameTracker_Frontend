@@ -390,7 +390,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 900;
   backdrop-filter: blur(3px);
   animation: fadeIn 0.3s ease-out;
 }

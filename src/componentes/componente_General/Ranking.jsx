@@ -98,7 +98,15 @@ function Ranking() {
 
       <button
         className="btn-ranking"
-        onClick={() => setMostrarMiRanking(!mostrarMiRanking)}
+        onClick={() => {
+          if (!usuarioId) {
+            console.warn('Usuario no logueado, abriendo modal...')
+            window.dispatchEvent(new Event('openLoginModal'))
+            return
+          }
+
+          setMostrarMiRanking(!mostrarMiRanking)
+        }}
       >
         {mostrarMiRanking ? 'Ver Top 1' : 'Ver mi ranking'}
       </button>
