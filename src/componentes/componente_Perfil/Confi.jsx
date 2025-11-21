@@ -1,6 +1,11 @@
 import '../../styles/confi.css'
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  eventoAuth,
+  eventoActualizarHeader,
+} from '../../event_Global/globalEvents'
+
 
 function Confi() {
   const [juegos, setJuegos] = useState([])
