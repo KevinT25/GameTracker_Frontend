@@ -63,7 +63,9 @@ function Status({ userId }) {
     } else {
       const fetchUser = async () => {
         try {
-          const res = await fetch(`${API_URL}/api/users/users/${visitingId}`)
+          const res = await authFetch(
+            `${API_URL}/api/users/users/${visitingId}`
+          )
           const data = await res.json()
           setUser(data)
         } catch (err) {
