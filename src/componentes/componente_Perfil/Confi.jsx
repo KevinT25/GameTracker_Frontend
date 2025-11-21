@@ -1,8 +1,6 @@
 import '../../styles/confi.css'
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { eventoAuth } from '../../event_global/eventoAuth'
-import { eventoActualizarHeader } from '../../event_global/eventoActualizarHeader'
 
 function Confi() {
   const [juegos, setJuegos] = useState([])
@@ -19,7 +17,6 @@ function Confi() {
   const [descripcion, setDescripcion] = useState('')
 
   // cuenta
-  const [IsLoginOpen, setIsLoginOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
@@ -187,12 +184,13 @@ function Confi() {
 
       cargarUsuario()
 
+      eventoActualizarHeader.emitir() // refresca header SIN hacer logout
+
       alert('Cuenta actualizada')
     } catch (err) {
       console.error('Error actualizando cuenta:', err)
     }
   }
-
 
   const eliminarCuenta = async () => {
     if (!confirm('¿Eliminar tu cuenta permanentemente?')) return
@@ -209,8 +207,8 @@ function Confi() {
       localStorage.removeItem('user')
       setUser(null)
 
-      eventoAuth.emitir(false)
-      eventoActualizarHeader.emitir()
+      eventoAuth.emitir(false) // logout global
+      eventoActualizarHeader.emitir() // refrescar header
 
       alert('Cuenta eliminada')
       navigate('/')
@@ -219,22 +217,21 @@ function Confi() {
     }
   }
 
-
   const cerrarSesion = () => {
     localStorage.removeItem('user')
+
     setUser(null)
     setNombre('')
     setEmail('')
     setContrasenia('')
     setJuegos([])
 
-    eventoAuth.emitir(false)
-    eventoActualizarHeader.emitir()
+    eventoAuth.emitir(false) // logout global
+    eventoActualizarHeader.emitir() // refrescar header
 
-    alert('Has cerrado sesión correctamente.')
+    alert('Has cerrado sesión.')
     navigate('/')
   }
-
 
   // --- Logros -------
   useEffect(() => {
