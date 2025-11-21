@@ -1,6 +1,8 @@
 import '../../styles/Perfil.css'
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { authFetch } from '../../utils/authFetch'
+
 import iconConfiguracion from '../../assets/Icons/iconConfiguracion.png'
 import perfilKnight from '../../assets/perfilPlayer/perfilKnight.jpg'
 import perfilDwarf from '../../assets/perfilPlayer/perfilDwarf.png'
@@ -61,7 +63,6 @@ function Status({ userId }) {
     } else {
       const fetchUser = async () => {
         try {
-          const API_URL = import.meta.env.VITE_API_URL
           const res = await fetch(`${API_URL}/api/users/users/${visitingId}`)
           const data = await res.json()
           setUser(data)
@@ -73,7 +74,7 @@ function Status({ userId }) {
     }
   }, [visitingId, esMiPerfil, userLocalMemo])
 
-  // --- Cargar estadísticas, logros, etc ----
+  // --- Cargar estadísticas, logros, etc ---
   useEffect(() => {
     if (!user) return
 
@@ -82,10 +83,15 @@ function Status({ userId }) {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const API_URL = import.meta.env.VITE_API_URL
-        const statsRes = await fetch(`${API_URL}/api/dataUser/usuario/${uid}/stats`)
-        const logrosRes = await fetch(`${API_URL}/api/usuario/${uid}/miLogro`)
-        const dataUserRes = await fetch(`${API_URL}/api/dataUser/usuario/${uid}`
+
+        const statsRes = await authFetch(
+          `${API_URL}/api/dataUser/usuario/${uid}/stats`
+        )
+        const logrosRes = await authFetch(
+          `${API_URL}/api/usuario/${uid}/miLogro`
+        )
+        const dataUserRes = await authFetch(
+          `${API_URL}/api/dataUser/usuario/${uid}`
         )
 
         if (statsRes.ok) {
@@ -133,8 +139,9 @@ function Status({ userId }) {
 
     const verificarAmistad = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL
-        const res = await fetch(`${API_URL}/api/dataUser/usuario/${usuarioId}`)
+        const res = await authFetch(
+          `${API_URL}/api/dataUser/usuario/${usuarioId}`
+        )
         const data = await res.json()
 
         if (Array.isArray(data) && data[0]?.amigos) {
@@ -152,7 +159,7 @@ function Status({ userId }) {
   // --- Agregar amigo ---
   async function agregarAmigo(usuarioId, amigoId) {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/dataUser/usuario/${usuarioId}/anadir-amigo/${amigoId}`,
         { method: 'POST' }
       )
@@ -195,11 +202,8 @@ function Status({ userId }) {
 
       const url = `${API_URL}/api/usuario/${uid}/miLogro`
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ miLogro: logro }),
       })
 
@@ -222,9 +226,8 @@ function Status({ userId }) {
       const uid = user?.id || user?._id
       const url = `${API_URL}/api/dataUser/usuario/${uid}/genero`
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ genero: nuevoGenero }),
       })
 
