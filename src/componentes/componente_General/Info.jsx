@@ -1,9 +1,12 @@
 import './../../styles/Info.css'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { authFetch } from '../../helpers/authFetch'
+
 import FormularioResenias from '../componente_Foro/FormularioResenia'
 import Respuesta from '../componente_Foro/Respuesta'
 import Loader from '../componente_General/Loading'
+
 import tiempoCarga4 from '../../assets/loadingGif/tiempoCarga4.gif'
 import iconGrimorio from '../../assets/Icons/iconGrimorio.png'
 import iconGrimorioVacio from '../../assets/Icons/iconGrimorioVacio.png'
@@ -23,121 +26,114 @@ function InfoJuego({ setJuegos }) {
   const [reseñas, setReseñas] = useState([])
   const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
   const API_URL = import.meta.env.VITE_API_URL
-  // Obtener usuario desde localStorage
+
+  // Cargar usuario desde localStorage
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
+    const saved = localStorage.getItem('user')
+    if (saved) {
       try {
-        const parsed = JSON.parse(userData)
-        setUser(parsed)
-      } catch (err) {
-        console.error('Error parseando usuario:', err)
+        setUser(JSON.parse(saved))
+      } catch (e) {
+        console.error('Error parseando user:', e)
       }
     }
   }, [])
 
-  // Cargar datos del juego y reseñas
+  // Cargar datos del juego + relacion + reseñas
   useEffect(() => {
     if (!user) return
 
+    let cancel = false
     setLoading(true)
-    let cancelled = false
+
     const userId = user._id || user.id
 
-    const fetchData = async () => {
+    const cargarDatos = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL
+        // Obtener juego
         const resJuego = await fetch(`${API_URL}/api/games/games/${id}`)
-        if (!resJuego.ok)
-          throw new Error('Error al obtener los datos del juego')
+        if (!resJuego.ok) throw new Error('Error obteniendo juego')
+
         let dataJuego = await resJuego.json()
 
-        const resUserRelacion = await fetch(
+        // Obtener relacion usuario-juego (PROTEGIDO)
+        const resRelacion = await authFetch(
           `${API_URL}/api/dataUser/usuario/${userId}`
         )
-        if (!resUserRelacion.ok)
-          throw new Error('Error al obtener relación del usuario')
-        const dataUser = await resUserRelacion.json()
 
-        if (cancelled) return
+        let dataRelacion = []
+        if (resRelacion.ok) {
+          dataRelacion = await resRelacion.json()
+        }
 
-        const relacion = Array.isArray(dataUser)
-          ? dataUser.find((d) => {
+        if (cancel) return
+
+        const relacion = Array.isArray(dataRelacion)
+          ? dataRelacion.find((d) => {
               const idJuego = d?.juegoId?._id ?? d?.juegoId
               return idJuego === dataJuego._id
             })
           : null
 
-        if (relacion) {
-          dataJuego = {
-            ...dataJuego,
-            misjuegos: relacion.misjuegos,
-            wishlist: relacion.wishlist,
-            completado: relacion.completado,
-          }
-        } else {
-          dataJuego = {
-            ...dataJuego,
-            misjuegos: false,
-            wishlist: false,
-            completado: false,
-          }
+        dataJuego = {
+          ...dataJuego,
+          misjuegos: relacion?.misjuegos || false,
+          wishlist: relacion?.wishlist || false,
+          completado: relacion?.completado || false,
         }
 
         setJuego(dataJuego)
-        setLoading(false)
 
-        // Cargar reseñas del juego
+        // Cargar reseñas (no requiere token)
         const resReseñas = await fetch(`${API_URL}/api/reviews/game/${id}`)
+
         if (resReseñas.ok) {
-          const dataReseñas = await resReseñas.json()
-          setReseñas(dataReseñas)
+          setReseñas(await resReseñas.json())
         }
       } catch (err) {
-        console.error('Error al cargar datos en InfoJuego:', err)
-        setLoading(false)
+        console.error('Error en InfoJuego:', err)
+      } finally {
+        if (!cancel) setLoading(false)
       }
     }
 
-    fetchData()
+    cargarDatos()
 
     return () => {
-      cancelled = true
+      cancel = true
     }
   }, [id, user])
 
-  // Función para actualizar estado usuario-juego
+  // Actualizar estado usuario-juego
   const actualizarEstado = async (juegoId, campo, valor) => {
     try {
       let userId = user?._id || user?.id
+
       if (!userId) {
-        const storedUser = localStorage.getItem('user')
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser)
+        const saved = localStorage.getItem('user')
+        if (saved) {
+          const parsed = JSON.parse(saved)
           userId = parsed._id || parsed.id
         }
       }
-      if (!userId) {
-        navigate('/perfil')
-        return
-      }
 
-      const res = await fetch(
+      if (!userId) return navigate('/perfil')
+
+      const res = await authFetch(
         `${API_URL}/api/dataUser/usuario/${userId}/juego/${juegoId}`,
         {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ [campo]: valor }),
         }
       )
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        console.error('Error al actualizar:', err)
+        console.error(await res.json().catch(() => {}))
         return
       }
 
-      setJuego((prev) => (prev ? { ...prev, [campo]: valor } : prev))
+      setJuego((prev) => ({ ...prev, [campo]: valor }))
+
       if (typeof setJuegos === 'function') {
         setJuegos((prev) =>
           Array.isArray(prev)
@@ -147,49 +143,50 @@ function InfoJuego({ setJuegos }) {
             : prev
         )
       }
-    } catch (error) {
-      console.error('Error al conectar con el backend:', error)
+    } catch (err) {
+      console.error('Error actualizando estado:', err)
     }
   }
 
-  // Actualiza reseñas al enviar una nueva
-  const handleReseniaEnviada = (nuevaResenia) => {
-    setReseñas((prev) => [nuevaResenia, ...prev])
+  // Nueva reseña
+  const handleReseniaEnviada = (nueva) => {
+    setReseñas((prev) => [nueva, ...prev])
   }
 
-  // Maneja el envío de una respuesta
-  const handleEnviarRespuesta = async (reseñaId, textoRespuesta) => {
+  // Enviar respuesta (PROTEGIDO → usa authFetch)
+  const handleEnviarRespuesta = async (reseñaId, texto) => {
     if (!user?._id && !user?.id) {
-      alert('Debes iniciar sesión para responder.')
-      return
+      return alert('Debes iniciar sesión para responder.')
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/reviews/${reseñaId}/responder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          respuesta: textoRespuesta,
-          usuarioId: user._id || user.id,
-        }),
-      })
+      const res = await authFetch(
+        `${API_URL}/api/reviews/${reseñaId}/responder`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            respuesta: texto,
+            usuarioId: user._id || user.id,
+          }),
+        }
+      )
 
-      if (!res.ok) throw new Error('Error al enviar respuesta.')
+      if (!res.ok) throw new Error('Error enviando respuesta')
 
-      const dataActualizada = await res.json()
+      const actualizada = await res.json()
 
-      // Actualiza reseñas localmente
       setReseñas((prev) =>
-        prev.map((r) => (r._id === dataActualizada._id ? dataActualizada : r))
+        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
       )
 
       setReseniaSeleccionada(null)
     } catch (err) {
-      console.error('Error enviando respuesta:', err)
-      alert('Hubo un problema al enviar tu respuesta.')
+      console.error('Error respuesta:', err)
+      alert('Hubo un problema al responder.')
     }
   }
 
+  // Render
   if (loading) return <Loader imagen={tiempoCarga4} />
   if (!juego) return <p>No se encontró el juego.</p>
 
@@ -202,6 +199,7 @@ function InfoJuego({ setJuegos }) {
       />
       <h1>{juego.titulo}</h1>
       <p className="subtitle">{juego.descripcion}</p>
+
       <p>
         <strong>Género:</strong> {juego.genero}
       </p>
@@ -217,11 +215,9 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'misjuegos', !juego.misjuegos)
           }
-          data-tooltip={`${juego.misjuegos ? 'Quitar' : 'Añadir'} mi juego`}
         >
           <img
             src={juego.misjuegos ? iconMisJuegos : iconEliminar}
-            alt={juego.misjuegos ? 'En mis juegos' : 'Agregar a mis juegos'}
             className="iconGames"
           />
         </button>
@@ -231,11 +227,9 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'wishlist', !juego.wishlist)
           }
-          data-tooltip={`${juego.wishlist ? 'Quitar' : 'Añadir'} favorito`}
         >
           <img
             src={juego.wishlist ? iconWishlist : iconNoWishlist}
-            alt={juego.wishlist ? 'En wishlist' : 'Agregar a wishlist'}
             className="iconGames"
           />
         </button>
@@ -245,21 +239,14 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'completado', !juego.completado)
           }
-          data-tooltip={`${juego.completado ? 'Quitar' : 'Añadir'} Completado `}
         >
           <img
             src={juego.completado ? iconCompletados : iconPorCompletar}
-            alt={
-              juego.completado
-                ? 'Juego completado'
-                : 'Marcar como por completar'
-            }
             className="iconGames"
           />
         </button>
       </div>
 
-      {/* Formulario de reseñas */}
       <FormularioResenias
         juegoId={juego._id}
         usuarioId={user?._id || user?.id}
@@ -267,9 +254,9 @@ function InfoJuego({ setJuegos }) {
         onReseniaEnviada={handleReseniaEnviada}
       />
 
-      {/* Lista de reseñas */}
       <div className="reseña">
         <h3>Reseñas de usuarios</h3>
+
         {reseñas.length === 0 && <p>No hay reseñas aún.</p>}
 
         {reseñas.map((r) => (
@@ -277,9 +264,8 @@ function InfoJuego({ setJuegos }) {
             <details className="reseña-details">
               <summary className="reseña-summary">
                 <div className="reseña-info">
-                  <strong className="reseña-titulo">
-                    {r.usuarioId?.nombre || 'Anónimo'}
-                  </strong>
+                  <strong>{r.usuarioId?.nombre || 'Anónimo'}</strong>
+
                   <div className="grimorios-puntuacion">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <img
@@ -287,9 +273,6 @@ function InfoJuego({ setJuegos }) {
                         src={
                           n <= r.puntuacion ? iconGrimorio : iconGrimorioVacio
                         }
-                        alt={`grimorio ${
-                          n <= r.puntuacion ? 'activo' : 'vacío'
-                        }`}
                         className="grimorio"
                       />
                     ))}
@@ -306,20 +289,20 @@ function InfoJuego({ setJuegos }) {
                   Responder
                 </button>
               </summary>
+
               <div className="reseña-contenido">
                 <div className="info-reseña">
                   <p>Asunto: {r.dificultad || 'No especificada'}</p>
                   <p className="hr-jugadas">Horas jugadas: {r.horasJugadas}</p>
                 </div>
+
                 <p className="reseña-texto">{r.textoResenia}</p>
 
                 {r.respuestas?.length > 0 && (
                   <div className="reseña-respuestas">
                     {r.respuestas.map((resp, i) => (
                       <div key={i} className="respuesta-item">
-                        <strong>
-                          {resp.usuarioId?.nombre || 'Usuario anónimo'}:
-                        </strong>{' '}
+                        <strong>{resp.usuarioId?.nombre || 'Anónimo'}:</strong>
                         {resp.texto}
                       </div>
                     ))}

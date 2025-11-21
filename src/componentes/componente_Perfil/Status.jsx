@@ -1,7 +1,7 @@
 import '../../styles/Perfil.css'
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { authFetch } from '../../utils/authFetch'
+import { authFetch } from '../../helpers/authFetch'
 
 import iconConfiguracion from '../../assets/Icons/iconConfiguracion.png'
 import perfilKnight from '../../assets/perfilPlayer/perfilKnight.jpg'
