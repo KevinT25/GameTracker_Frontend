@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { authFetch } from '../../helpers/authFetch'
 import Status from './Status'
 import Estadisticas from './Estadisticas'
 import MisJuegos from './MisJuegos'

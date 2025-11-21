@@ -5,7 +5,7 @@ import {
   eventoAuth,
   eventoActualizarHeader,
 } from '../../event_Global/globalEvents'
-
+import { authFetch } from '../../helpers/authFetch'
 
 function Confi() { 
   const [juegos, setJuegos] = useState([])
@@ -261,7 +261,7 @@ function Confi() {
           return
         }
 
-        const resUnlocked = await authFetch(
+        const resUnlocked = await Fetch(
           `${API_URL}/api/usuario/${uid}/logros`
         )
         if (!resUnlocked.ok)
