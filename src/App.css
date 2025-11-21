@@ -61,8 +61,8 @@
   --color-bg-secondary: #1a1a1a; /* Fondos degradados o secundarios */
   --color-bg-accent: #000; /* Fondo de navbar y footer */
   --color-bg-alt: #111111;
-  --color-bg-accept: rgb(211, 181, 82, 0.1);
-  --color-bg-refused: rgb(179, 36, 36, 0.1);
+  --color-bg-accept: rgb(211, 181, 82, 0.4);
+  --color-bg-refused: rgb(179, 36, 36, 0.4);
   --color-borde-refused: #380b0b; 
   --color-border: #d4af37; /* Borde principal dorado */
   --color-outline: rgba(255, 255, 255, 0.133); /* Outline sutil */

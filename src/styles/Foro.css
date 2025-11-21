@@ -404,7 +404,6 @@
   padding: var(--padding-card);
   width: 90%;
   max-width: 500px;
-  transform: scale(0.9);
   animation: fadeInScale 0.4s forwards;
 }
 
@@ -450,7 +449,7 @@
   cursor: pointer;
   padding: 10px 20px;
   font-family: var(--font-title);
-  font-size: clamp(12px ,var(--font-size-navbar), 25px);
+  font-size: var(--font-size-navbar);
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   border-radius: var(--radius-md);
@@ -483,5 +482,24 @@
   .notice {
     margin: 0 auto;
     width: 80%;
+  }
+
+  .respuesta-modal-content {
+    width: 70%;
+  }
+
+  .respuesta-modal-content h2 {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+  }
+
+  .respuesta-modal-acciones {
+    gap: var(--gap-lg);
+  }
+
+  .respuesta-modal-acciones button {
+    padding: 5px 15px;
+    font-size: 12px;
   }
 }
