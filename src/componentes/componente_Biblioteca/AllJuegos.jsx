@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { authFetch } from '../../helpers/authFetch' 
+
 import iconNoWishlist from '../../assets/Icons/iconNoWishlist.png'
 import iconWishlist from '../../assets/Icons/iconWishlist.png'
 import iconMisJuegos from '../../assets/Icons/iconMisJuegos.png'
@@ -206,9 +208,11 @@ function AllJuegos({ juegos = [], setJuegos }) {
   }
 
   // Función de wishlist y agregar a mis juegos
+  
+
   const actualizarEstado = async (juegoId, campo, valor) => {
     try {
-      // Obtener userId desde estado o localStorage
+      // 1. Obtener userId desde contexto o localStorage
       let userId = user?._id || user?.id
 
       if (!userId) {
@@ -219,18 +223,20 @@ function AllJuegos({ juegos = [], setJuegos }) {
         }
       }
 
+      // 2. Si no hay userId
       if (!userId) {
         console.error('Usuario no logueado')
         navigate('/perfil')
         return
       }
+
       const API_URL = import.meta.env.VITE_API_URL
-      // Ejecutar la petición al backend
-      const res = await fetch(
+
+      // 3. Usar authFetch para enviar el token automáticamente
+      const res = await authFetch(
         `${API_URL}/api/dataUser/usuario/${userId}/juego/${juegoId}`,
         {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ [campo]: valor }),
         }
       )
@@ -241,7 +247,7 @@ function AllJuegos({ juegos = [], setJuegos }) {
         return
       }
 
-      // Actualizar visualmente
+      // 4. Actualización visual eficiente
       setJuegos((prev) =>
         prev.map((j) => (j._id === juegoId ? { ...j, [campo]: valor } : j))
       )
