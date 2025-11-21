@@ -22,22 +22,13 @@ function InfoJuego({ setJuegos }) {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [juego, setJuego] = useState(null)
-  const [user, setUser] = useState(null)
   const [reseñas, setReseñas] = useState([])
   const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
   const API_URL = import.meta.env.VITE_API_URL
 
   // Cargar usuario desde localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('user')
-    if (saved) {
-      try {
-        setUser(JSON.parse(saved))
-      } catch (e) {
-        console.error('Error parseando user:', e)
-      }
-    }
-  }, [])
+  const usuarioLS = JSON.parse(localStorage.getItem('user') || 'null')
+  const [user, setUser] = useState(usuarioLS)
 
   // Cargar datos del juego + relacion + reseñas
   useEffect(() => {
@@ -46,7 +37,7 @@ function InfoJuego({ setJuegos }) {
     let cancel = false
     setLoading(true)
 
-    const userId = user._id || user.id
+    const userId = user?._id || user?.id || null
 
     const cargarDatos = async () => {
       try {

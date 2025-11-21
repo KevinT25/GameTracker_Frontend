@@ -1,5 +1,6 @@
 import '../../styles/Ranking.css'
 import { useEffect, useState } from 'react'
+import { authFetch } from '../../utils/authFetch'
 
 import rankingAmigo from '../../assets/ranking/rankingAmigo.png'
 import rankingLogro from '../../assets/ranking/rankingLogro.png'
@@ -28,49 +29,57 @@ function Ranking() {
   const [misStats, setMisStats] = useState(null)
   const [mostrarMiRanking, setMostrarMiRanking] = useState(false)
   const [usuarioId, setUsuarioId] = useState(null)
-  
+
+  const API_URL = import.meta.env.VITE_API_URL
+
   // Cargar ranking general
   useEffect(() => {
+    let cancelado = false
+
     const cargarRanking = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL
-        const res = await fetch(`${API_URL}/api/dataUser/leaderboard`)
+        const res = await authFetch(`${API_URL}/api/dataUser/leaderboard`)
         if (!res.ok) throw new Error('Error al cargar ranking')
+
         const data = await res.json()
-        setRankingData(data)
+        if (!cancelado) setRankingData(data)
       } catch (err) {
         console.error('Error cargando ranking:', err)
       }
     }
+
     cargarRanking()
+    return () => (cancelado = true)
   }, [])
 
   // Obtener ID del usuario actual
   useEffect(() => {
-    let uid = null
-
     const userData = localStorage.getItem('user')
-    if (userData) uid = JSON.parse(userData)?.id
+    const uid = userData ? JSON.parse(userData)?.id : null
 
     setUsuarioId(uid)
-
     if (!uid) return
+
+    let cancelado = false
 
     const cargarMisStats = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL
-        const res = await fetch(`${API_URL}/api/dataUser/usuario/${uid}/stats`)
+        const res = await authFetch(
+          `${API_URL}/api/dataUser/usuario/${uid}/stats`
+        )
         const data = await res.json()
-        setMisStats(data)
+
+        if (!cancelado) setMisStats(data)
       } catch (err) {
         console.error('Error al cargar mis stats:', err)
       }
     }
 
     cargarMisStats()
+    return () => (cancelado = true)
   }, [])
 
-  //Calcular mi puesto por categoría
+  // Calcular mi puesto por categoría
   const calcularPuesto = (key) => {
     if (!misStats || !usuarioId || rankingData.length === 0) return null
 
@@ -80,9 +89,7 @@ function Ranking() {
 
     const index = ordenados.findIndex((u) => u.usuarioId === usuarioId)
 
-    if (index === -1) return { miPuesto: null }
-
-    return { miPuesto: index + 1 }
+    return index === -1 ? { miPuesto: null } : { miPuesto: index + 1 }
   }
 
   return (
@@ -102,14 +109,14 @@ function Ranking() {
           let valor = 0
 
           if (!mostrarMiRanking) {
-            /** === Mostrar TOP 1 === */
+            // TOP 1
             const topUser = [...rankingData].sort(
               (a, b) => (b[r.key] || 0) - (a[r.key] || 0)
             )[0]
             nombre = topUser?.nombre || '---'
             valor = topUser?.[r.key] || 0
           } else if (misStats) {
-            /** === Mostrar MIS DATOS === */
+            // MIS DATOS
             nombre = misStats.nombre || 'Yo'
             valor = misStats[r.key] || 0
           }

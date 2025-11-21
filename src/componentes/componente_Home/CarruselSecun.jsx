@@ -1,7 +1,7 @@
 import './../../styles/CarruselSecun.css'
 import { useEffect, useState } from 'react'
 import SliderCategoria from './Categoria'
-import { authFetch } from '../../utils/authFetch' // <-- usa tu helper
+import { authFetch } from '../../helpers/authFetch' 
 
 function SlidersContainer() {
   const [juegos, setJuegos] = useState([])
