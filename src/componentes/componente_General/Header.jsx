@@ -62,7 +62,6 @@ function Headers() {
 
   useEffect(() => {
     const abrirModalLogin = () => {
-      console.log('Evento global: abrir login modal')
       setIsLoginOpen(true)
     }
 

@@ -180,7 +180,6 @@ function Confi() {
           email: data.email,
         })
       )
-
       cargarUsuario()
       alert('Cuenta actualizada')
     } catch (err) {
@@ -201,6 +200,8 @@ function Confi() {
       setUser(null)
       alert('Cuenta eliminada')
       navigate('/')
+      eventoAuth.emitir(false)
+      eventoActualizarHeader.emitir()
     } catch (err) {
       console.error('Error eliminando cuenta:', err)
     }
@@ -213,6 +214,8 @@ function Confi() {
     setEmail('')
     setContrasenia('')
     setJuegos([])
+    eventoAuth.emitir(false)
+    eventoActualizarHeader.emitir()
     navigate('/')
     alert('Has cerrado sesión correctamente.')
   }
@@ -357,7 +360,7 @@ function Confi() {
 
       <section className="confi-cuenta">
         <h2>Mi Cuenta</h2>
-        <div className="form">
+        <form onSubmit={(e) => e.preventDefault()} className="form">
           <input
             placeholder="Nombre"
             value={nombre}
@@ -366,15 +369,17 @@ function Confi() {
           <input
             placeholder="Email"
             value={email}
+            autoComplete="email"
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
             placeholder="Contraseña (nueva)"
             type="password"
+            autoComplete="new-password"
             value={contrasenia}
             onChange={(e) => setContrasenia(e.target.value)}
           />
-        </div>
+        </form>
         <div className="form-actions">
           <button onClick={actualizarCuenta} className="btn-gold">
             Actualizar cuenta
