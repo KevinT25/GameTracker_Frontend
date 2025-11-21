@@ -159,7 +159,6 @@ function InfoJuego({ setJuegos }) {
       dejarDeEscuchar(eventoAuth.nombre, manejarAuth)
     }
   }, [])
-  console.log(e.detail?.logueado)
   // Actualizar estado usuario-juego
   const actualizarEstado = async (juegoId, campo, valor) => {
     try {
