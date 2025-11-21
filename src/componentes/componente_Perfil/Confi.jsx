@@ -7,7 +7,7 @@ import {
 } from '../../event_Global/globalEvents'
 
 
-function Confi() {
+function Confi() { 
   const [juegos, setJuegos] = useState([])
   const [editandoId, setEditandoId] = useState(null)
 
@@ -33,11 +33,11 @@ function Confi() {
   const API_URL = import.meta.env.VITE_API_URL
   const navigate = useNavigate()
 
+  // --- Cargar usuario ---
   const cargarUsuario = () => {
     try {
       const raw = localStorage.getItem('user')
       if (!raw) {
-        // Aquí NO hacemos nada más, porque Confi jamás puede abrir sin login
         setUser(null)
         return
       }
@@ -52,16 +52,16 @@ function Confi() {
     }
   }
 
+  // --- Obtener juegos ---
   const fetchJuegos = useCallback(async () => {
     const uid = user?.id || user?._id
     if (!uid) return
-    try {
-      const API_URL = import.meta.env.VITE_API_URL
-      const res = await fetch(`${API_URL}/api/games?facilitador=${uid}`)
-      if (!res.ok) throw new Error(await res.text())
-      const data = await res.json()
 
-      // protección por si vienen nulls desde el backend
+    try {
+      const res = await authFetch(`${API_URL}/api/games?facilitador=${uid}`)
+      if (!res.ok) throw new Error(await res.text())
+
+      const data = await res.json()
       const filtrados = data.filter((g) => g && g._id)
 
       setJuegos(filtrados)
@@ -78,9 +78,10 @@ function Confi() {
     if (user) fetchJuegos()
   }, [user, fetchJuegos])
 
-  // --- Juegos CRUD ---
+  // --- Crear juego ---
   const crearJuego = async () => {
     const uid = user.id || user._id
+
     const nuevoJuego = {
       titulo,
       genero,
@@ -92,24 +93,27 @@ function Confi() {
       descripcion,
       facilitador: uid,
     }
+
     try {
-      const API_URL = import.meta.env.VITE_API_URL
-      const res = await fetch(`${API_URL}/api/games`, {
+      const res = await authFetch(`${API_URL}/api/games`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nuevoJuego),
       })
+
       if (!res.ok) throw new Error(await res.text())
 
-      await fetchJuegos() // ← YA NO borra la lista
+      await fetchJuegos()
       limpiarFormularioJuego()
     } catch (err) {
       console.error('Error creando juego:', err)
     }
   }
 
+  // --- Actualizar juego ---
   const actualizarJuego = async () => {
     if (!editandoId) return
+
     const actualizado = {
       titulo,
       genero,
@@ -120,17 +124,19 @@ function Confi() {
       imagenPortada,
       descripcion,
     }
+
     try {
-      const API_URL = import.meta.env.VITE_API_URL
-      const res = await fetch(`${API_URL}/api/games/games/${editandoId}`, {
+      const res = await authFetch(`${API_URL}/api/games/games/${editandoId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(actualizado),
       })
+
       if (!res.ok) throw new Error(await res.text())
+
       const data = await res.json()
 
-      setJuegos((prev) => prev.map((p) => (p._id === editandoId ? data : p)))
+      setJuegos((prev) => prev.map((j) => (j._id === editandoId ? data : j)))
       setEditandoId(null)
       limpiarFormularioJuego()
     } catch (err) {
@@ -138,6 +144,7 @@ function Confi() {
     }
   }
 
+  // --- Preparar edición ---
   const prepararEdicion = (juego) => {
     if (!juego) return
 
@@ -152,6 +159,7 @@ function Confi() {
     setDescripcion(juego.descripcion || '')
   }
 
+  // --- Limpiar formulario ---
   const limpiarFormularioJuego = () => {
     setTitulo('')
     setGenero('')
@@ -163,12 +171,12 @@ function Confi() {
     setDescripcion('')
   }
 
-  // --- Cuenta ---
+  // --- Actualizar cuenta ---
   const actualizarCuenta = async () => {
     const id = user.id || user._id
 
     try {
-      const res = await fetch(`${API_URL}/api/users/users/${id}`, {
+      const res = await authFetch(`${API_URL}/api/users/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, contrasenia }),
@@ -188,22 +196,21 @@ function Confi() {
       )
 
       cargarUsuario()
-
-      eventoActualizarHeader.emitir() // refresca header SIN hacer logout
-
+      eventoActualizarHeader.emitir()
       alert('Cuenta actualizada')
     } catch (err) {
       console.error('Error actualizando cuenta:', err)
     }
   }
 
+  // --- Eliminar cuenta ---
   const eliminarCuenta = async () => {
     if (!confirm('¿Eliminar tu cuenta permanentemente?')) return
 
     const id = user.id || user._id
 
     try {
-      const res = await fetch(`${API_URL}/api/users/users/${id}`, {
+      const res = await authFetch(`${API_URL}/api/users/users/${id}`, {
         method: 'DELETE',
       })
 
@@ -212,8 +219,8 @@ function Confi() {
       localStorage.removeItem('user')
       setUser(null)
 
-      eventoAuth.emitir(false) // logout global
-      eventoActualizarHeader.emitir() // refrescar header
+      eventoAuth.emitir(false)
+      eventoActualizarHeader.emitir()
 
       alert('Cuenta eliminada')
       navigate('/')
@@ -222,6 +229,7 @@ function Confi() {
     }
   }
 
+  // --- Cerrar sesión ---
   const cerrarSesion = () => {
     localStorage.removeItem('user')
 
@@ -231,14 +239,14 @@ function Confi() {
     setContrasenia('')
     setJuegos([])
 
-    eventoAuth.emitir(false) // logout global
-    eventoActualizarHeader.emitir() // refrescar header
+    eventoAuth.emitir(false)
+    eventoActualizarHeader.emitir()
 
     alert('Has cerrado sesión.')
     navigate('/')
   }
 
-  // --- Logros -------
+  // --- Cargar logros ---
   useEffect(() => {
     const cargarLogros = async () => {
       try {
@@ -247,24 +255,28 @@ function Confi() {
         const todosLogros = await resAll.json()
 
         const uid = user?.id || user?._id
+
         if (!uid) {
           setLogros(todosLogros)
           return
         }
 
-        const resUnlocked = await fetch(`${API_URL}/api/usuario/${uid}/logros`)
+        const resUnlocked = await authFetch(
+          `${API_URL}/api/usuario/${uid}/logros`
+        )
         if (!resUnlocked.ok)
           throw new Error('Error al cargar logros desbloqueados')
 
         const logrosDesbloqueados = await resUnlocked.json()
 
-        const idsDesbloqueados = new Set(logrosDesbloqueados.map((l) => l._id))
-        const logrosConEstado = todosLogros.map((l) => ({
-          ...l,
-          desbloqueado: idsDesbloqueados.has(l._id),
-        }))
+        const ids = new Set(logrosDesbloqueados.map((l) => l._id))
 
-        setLogros(logrosConEstado)
+        setLogros(
+          todosLogros.map((l) => ({
+            ...l,
+            desbloqueado: ids.has(l._id),
+          }))
+        )
       } catch (err) {
         console.error('Error cargando logros:', err)
       }

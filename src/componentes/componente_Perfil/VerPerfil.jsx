@@ -9,32 +9,42 @@ function VerPerfil() {
   const { id } = useParams()
   const [stats, setStats] = useState(null)
   const [usuario, setUsuario] = useState(null)
+  const API_URL = import.meta.env.VITE_API_URL
 
   useEffect(() => {
     if (!id) return
 
-    // Obtener datos del usuario visitado
+    // --- Obtener Usuario ---
     const obtenerUsuario = async () => {
-      const API_URL = import.meta.env.VITE_API_URL
-      const res = await fetch(`${API_URL}/api/users/users/${id}`)
-      const data = await res.json()
-      setUsuario(data)
+      try {
+        const res = await fetch(`${API_URL}/api/users/users/${id}`)
+        if (!res.ok) throw new Error(await res.text())
+
+        const data = await res.json()
+        setUsuario(data)
+      } catch (err) {
+        console.error('Error cargando usuario:', err)
+        setUsuario(null) // Evitar crash
+      }
     }
 
-    // Obtener estadisticas del usuario visitado
+    // --- Obtener Stats ---
     const obtenerStats = async () => {
-      const API_URL = import.meta.env.VITE_API_URL
-      const res = await fetch(`${API_URL}/api/dataUser/usuario/${id}/stats`)
-      const data = await res.json()
-      setStats(data)
+      try {
+        const res = await fetch(`${API_URL}/api/dataUser/usuario/${id}/stats`)
+        if (!res.ok) throw new Error(await res.text())
+
+        const data = await res.json()
+        setStats(data)
+      } catch (err) {
+        console.error('Error cargando stats:', err)
+        setStats(null) // no romper UI
+      }
     }
 
     obtenerUsuario()
     obtenerStats()
   }, [id])
-
-  if (!usuario) return <p className="cargando">Cargando perfil...</p>
-
   return (
     <div>
         <Status userId={id} />
