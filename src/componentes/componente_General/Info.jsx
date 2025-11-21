@@ -60,7 +60,6 @@ function InfoJuego({ setJuegos }) {
             p.then((r) => r).catch((err) => ({ ok: false, error: err }))
           )
         )
-        console.log('actualizado')
         if (cancelled) return
 
         // Procesar juego

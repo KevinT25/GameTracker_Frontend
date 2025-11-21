@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import Status from './../componentes/componente_Perfil/Status'
 import Estadisticas from './../componentes/componente_Perfil/Estadisticas'
 import MisJuegos from '../componentes/componente_Perfil/MisJuegos'
@@ -10,14 +10,27 @@ function Perfil() {
   const { id } = useParams()
   const [usuarioId, setUsuarioId] = useState(null)
 
+  const navigate = useNavigate()
+
+  // alidación principal: si no hay usuario → redirigir a login
   useEffect(() => {
-    let uid = id 
+    const userData = localStorage.getItem('user')
+
+    // Si NO existe user en localStorage Y tampoco hay ID en la URL
+    if (!userData && !id) {
+      navigate('/login')
+      return
+    }
+  }, [id, navigate])
+  console.log('actualizado')
+  useEffect(() => {
+    let uid = id
 
     if (!uid) {
       const userData = localStorage.getItem('user')
       if (!userData) return
       const usuario = JSON.parse(userData)
-      uid = usuario?.id 
+      uid = usuario?.id
     }
 
     setUsuarioId(uid)
