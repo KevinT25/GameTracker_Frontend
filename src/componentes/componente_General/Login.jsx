@@ -125,6 +125,7 @@ function Login({ isOpen, onClose }) {
             type="email"
             name="email"
             placeholder="Email"
+            autocomplete="email"
             value={formData.email}
             onChange={handleInputChange}
             required
@@ -135,6 +136,7 @@ function Login({ isOpen, onClose }) {
             type="password"
             name="contrasenia"
             placeholder="Contraseña"
+            autocomplete="current-password"
             value={formData.contrasenia}
             onChange={handleInputChange}
             required
