@@ -1,6 +1,7 @@
 import './../../styles/Login.css'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { authFetch } from '../../helpers/authFetch'
 
 function Login({ isOpen, onClose }) {
   const [isLogin, setIsLogin] = useState(true)
@@ -12,20 +13,23 @@ function Login({ isOpen, onClose }) {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
+  const API_URL = import.meta.env.VITE_API_URL
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL
       const endpoint = isLogin ? '/api/users/login' : '/api/users'
+
+
+      // LOGIN o REGISTRO
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
-      console.log(API_URL)
-      console.log(endpoint)
+
       const data = await res.json()
 
       if (!res.ok) {
@@ -33,23 +37,30 @@ function Login({ isOpen, onClose }) {
         return
       }
 
+      // Guardar token SI es login
+      if (isLogin && data.token) {
+        localStorage.setItem('token', data.token)
+      }
+
+      // Guardar user
       const userData = data.user || data
       localStorage.setItem('user', JSON.stringify(userData))
 
-      // --- NUEVO CÓDIGO ---
+      // OTORGAR LOGRO (solo login)
       if (isLogin) {
         const userId = userData.id || userData._id
         const logroId = '690f9aa32b89ad388ddc677a'
+
         try {
-          const API_URL = import.meta.env.VITE_API_URL
-          const check = await fetch(`${API_URL}/api/dataUser/usuario/${userId}`)
+          // Verificar si existe dataUser
+          const check = await authFetch(
+            `${API_URL}/api/dataUser/usuario/${userId}`
+          )
+
           if (check.status === 404 || check.status === 400) {
-            const API_URL = import.meta.env.VITE_API_URL
-            await fetch(
+            await authFetch(
               `${API_URL}/api/dataUser/usuario/${userId}/logros/${logroId}`,
-              {
-                method: 'POST',
-              }
+              { method: 'POST' }
             )
             console.log('Logro "El Juramento del Acero" desbloqueado')
           }
@@ -58,6 +69,7 @@ function Login({ isOpen, onClose }) {
         }
       }
 
+      // CERRAR MODAL Y NAVEGAR
       onClose()
       navigate('/perfil')
     } catch {
@@ -80,9 +92,11 @@ function Login({ isOpen, onClose }) {
         <button className="modal-close" onClick={onClose}>
           ×
         </button>
+
         <h2 className="Title">
           {isLogin ? 'Acceder al Reino' : 'Únete a la Aventura'}
         </h2>
+
         {error && <p className="error-message">{error}</p>}
 
         <form onSubmit={handleSubmit} className="Form">
@@ -97,6 +111,7 @@ function Login({ isOpen, onClose }) {
               required
             />
           )}
+
           <input
             className="inpunt"
             type="email"
@@ -115,6 +130,7 @@ function Login({ isOpen, onClose }) {
             onChange={handleInputChange}
             required
           />
+
           <button type="submit" className="btn-registro">
             {isLogin ? 'Ingresar' : 'Registrarse'}
           </button>
