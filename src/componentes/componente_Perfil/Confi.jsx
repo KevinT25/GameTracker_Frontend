@@ -261,7 +261,7 @@ function Confi() {
           return
         }
 
-        const resUnlocked = await Fetch(
+        const resUnlocked = await fetch(
           `${API_URL}/api/usuario/${uid}/logros`
         )
         if (!resUnlocked.ok)
