@@ -274,6 +274,7 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'misjuegos', !juego.misjuegos)
           }
+          data-tooltip={`${juego.misjuegos ? 'Quitar' : 'Añadir'} mis juegos`}
         >
           <img
             src={juego.misjuegos ? iconMisJuegos : iconEliminar}
@@ -286,6 +287,7 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'wishlist', !juego.wishlist)
           }
+          data-tooltip={`${juego.wishlist ? 'Quitar' : 'Añadir'} favorito`}
         >
           <img
             src={juego.wishlist ? iconWishlist : iconNoWishlist}
@@ -298,6 +300,7 @@ function InfoJuego({ setJuegos }) {
           onClick={() =>
             actualizarEstado(juego._id, 'completado', !juego.completado)
           }
+          data-tooltip={`${juego.completado ? 'Quitar' : 'Añadir'} completado`}
         >
           <img
             src={juego.completado ? iconCompletados : iconPorCompletar}
