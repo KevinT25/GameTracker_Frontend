@@ -172,7 +172,11 @@ function InfoJuego({ setJuegos }) {
         }
       }
 
-      if (!userId) return navigate('/perfil')
+      if (!userId){
+        console.warn('Usuario no logueado, abriendo modal...')
+        window.dispatchEvent(new Event('openLoginModal'))
+        return
+      }
 
       const res = await authFetch(
         `${API_URL}/api/dataUser/usuario/${userId}/juego/${juegoId}`,
