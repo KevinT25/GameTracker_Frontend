@@ -26,74 +26,113 @@ function InfoJuego({ setJuegos }) {
   const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
   const API_URL = import.meta.env.VITE_API_URL
 
-  // Cargar usuario desde localStorage
+  // Leer usuario desde localStorage desde el primer render (evita delay)
   const usuarioLS = JSON.parse(localStorage.getItem('user') || 'null')
   const [user, setUser] = useState(usuarioLS)
 
-  // Cargar datos del juego + relacion + reseñas
   useEffect(() => {
-    if (!user) return
-
-    let cancel = false
+    let cancelled = false
+    const controller = new AbortController()
     setLoading(true)
 
     const userId = user?._id || user?.id || null
 
     const cargarDatos = async () => {
       try {
-        // Obtener juego
-        const resJuego = await fetch(`${API_URL}/api/games/games/${id}`)
-        if (!resJuego.ok) throw new Error('Error obteniendo juego')
+        // lanzar fetchs en paralelo (con abort)
+        const gameFetch = fetch(`${API_URL}/api/games/games/${id}`, {
+          signal: controller.signal,
+        })
+        const reviewsFetch = fetch(`${API_URL}/api/reviews/game/${id}`, {
+          signal: controller.signal,
+        })
 
-        let dataJuego = await resJuego.json()
-
-        // Obtener relacion usuario-juego (PROTEGIDO)
-        const resRelacion = await authFetch(
-          `${API_URL}/api/dataUser/usuario/${userId}`
-        )
-
-        let dataRelacion = []
-        if (resRelacion.ok) {
-          dataRelacion = await resRelacion.json()
-        }
-
-        if (cancel) return
-
-        const relacion = Array.isArray(dataRelacion)
-          ? dataRelacion.find((d) => {
-              const idJuego = d?.juegoId?._id ?? d?.juegoId
-              return idJuego === dataJuego._id
+        // relación solo si hay userId; sino devolvemos mock con ok=false
+        const relationFetch = userId
+          ? authFetch(`${API_URL}/api/dataUser/usuario/${userId}`, {
+              signal: controller.signal,
             })
-          : null
+          : Promise.resolve({ ok: false, status: 204, json: async () => [] })
 
-        dataJuego = {
-          ...dataJuego,
-          misjuegos: relacion?.misjuegos || false,
-          wishlist: relacion?.wishlist || false,
-          completado: relacion?.completado || false,
+        // Esperar resultados
+        const [gameRes, relationRes, reviewsRes] = await Promise.all(
+          [gameFetch, relationFetch, reviewsFetch].map((p) =>
+            p.then((r) => r).catch((err) => ({ ok: false, error: err }))
+          )
+        )
+        console.log('actualizado')
+        if (cancelled) return
+
+        // Procesar juego
+        if (gameRes && gameRes.ok) {
+          const dataJuego = await gameRes.json()
+
+          // Procesar relación
+          let dataRelacion = []
+          if (relationRes && relationRes.ok) {
+            try {
+              dataRelacion = await relationRes.json()
+            } catch (e) {
+              dataRelacion = []
+            }
+          }
+
+          const relacion = Array.isArray(dataRelacion)
+            ? dataRelacion.find((d) => {
+                const idJuego = d?.juegoId?._id ?? d?.juegoId
+                return idJuego === dataJuego._id
+              })
+            : null
+
+          const enriched = {
+            ...dataJuego,
+            misjuegos: relacion?.misjuegos || false,
+            wishlist: relacion?.wishlist || false,
+            completado: relacion?.completado || false,
+          }
+
+          setJuego(enriched)
+        } else {
+          // Si falla el fetch del juego, dejamos juego en null
+          console.error(
+            'Error obteniendo datos del juego',
+            gameRes?.error || gameRes
+          )
+          setJuego(null)
         }
 
-        setJuego(dataJuego)
-
-        // Cargar reseñas (no requiere token)
-        const resReseñas = await fetch(`${API_URL}/api/reviews/game/${id}`)
-
-        if (resReseñas.ok) {
-          setReseñas(await resReseñas.json())
+        if (reviewsRes && reviewsRes.ok) {
+          try {
+            const dataReseñas = await reviewsRes.json()
+            setReseñas(Array.isArray(dataReseñas) ? dataReseñas : [])
+          } catch (e) {
+            setReseñas([])
+          }
+        } else {
+          console.error(
+            'Error cargando reseñas',
+            reviewsRes?.error || reviewsRes
+          )
+          setReseñas([])
         }
       } catch (err) {
-        console.error('Error en InfoJuego:', err)
+        if (err.name === 'AbortError') {
+        } else {
+          console.error('Error en InfoJuego (catch):', err)
+        }
       } finally {
-        if (!cancel) setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
     cargarDatos()
 
     return () => {
-      cancel = true
+      cancelled = true
+      controller.abort()
     }
-  }, [id, user])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, user ? user._id || user.id : null])
 
   // Actualizar estado usuario-juego
   const actualizarEstado = async (juegoId, campo, valor) => {
@@ -123,7 +162,7 @@ function InfoJuego({ setJuegos }) {
         return
       }
 
-      setJuego((prev) => ({ ...prev, [campo]: valor }))
+      setJuego((prev) => (prev ? { ...prev, [campo]: valor } : prev))
 
       if (typeof setJuegos === 'function') {
         setJuegos((prev) =>
@@ -144,7 +183,7 @@ function InfoJuego({ setJuegos }) {
     setReseñas((prev) => [nueva, ...prev])
   }
 
-  // Enviar respuesta (PROTEGIDO → usa authFetch)
+  // Enviar respuesta
   const handleEnviarRespuesta = async (reseñaId, texto) => {
     if (!user?._id && !user?.id) {
       return alert('Debes iniciar sesión para responder.')

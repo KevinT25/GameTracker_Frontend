@@ -1,6 +1,6 @@
 import '../../styles/Ranking.css'
 import { useEffect, useState } from 'react'
-import { authFetch } from '../../utils/authFetch'
+import { authFetch } from '../../helpers/authFetch'
 
 import rankingAmigo from '../../assets/ranking/rankingAmigo.png'
 import rankingLogro from '../../assets/ranking/rankingLogro.png'
