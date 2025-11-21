@@ -18,7 +18,7 @@ function VerPerfil() {
     // --- Obtener Usuario ---
     const obtenerUsuario = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/users/users/${id}`)
+        const res = await authFetch(`${API_URL}/api/users/users/${id}`)
         if (!res.ok) throw new Error(await res.text())
 
         const data = await res.json()
