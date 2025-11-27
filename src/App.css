@@ -78,12 +78,12 @@
   --font-ornament: 'Uncial Antiqua', serif; /* Iconos o detalles decorativos */
 
   /*Tamaños de texto*/
-  --font-size-navbar: 20px;
-  --font-size-body: 18px;
-  --font-size-body-lg: 2rem;
-  --font-size-body-sh: 0.9rem;
-  --font-size-footer: 16px;
-  --font-size-card: 18px;
+  --font-size-navbar: clamp(12px, 20px, 30px);
+  --font-size-body: clamp(10px, 18px, 25px);
+  --font-size-body-lg: clamp(1,2rem, 2rem, 2.2rem);
+  --font-size-body-sh: clamp(0.5rem, 0.9rem, 1rem);
+  --font-size-footer: clamp(12px, 16px, 24px);
+  --font-size-card: clamp(0.8rem, 2vw, 1rem);
   --icon-size: 22px;
 
   /*Espaciado*/

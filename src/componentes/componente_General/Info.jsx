@@ -172,7 +172,7 @@ function InfoJuego({ setJuegos }) {
         }
       }
 
-      if (!userId){
+      if (!userId) {
         console.warn('Usuario no logueado, abriendo modal...')
         window.dispatchEvent(new Event('openLoginModal'))
         return
@@ -245,6 +245,12 @@ function InfoJuego({ setJuegos }) {
     }
   }
 
+  const descarga = () => {
+    navigate('/Download', {
+      state: { iframeUrl: juego.descarga },
+    })
+  }
+
   // Render
   if (loading) return <Loader imagen={tiempoCarga4} />
   if (!juego) return <p>No se encontró el juego.</p>
@@ -265,9 +271,10 @@ function InfoJuego({ setJuegos }) {
       <p>
         <strong>Plataforma:</strong> {juego.plataforma}
       </p>
-
       <div className="acciones-juego">
-        <button className="btn-jugar">Descargar</button>
+        <button className="btn-jugar" onClick={descarga}>
+          Jugar
+        </button>
 
         <button
           className={`mygame-boton ${juego.misjuegos ? 'activo' : ''}`}

@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.5s ease;
 }
 
 .card-juego:hover {
@@ -32,11 +32,13 @@
 
 /* Titulos */
 .card-juego .titulo {
-  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-size: var(--font-size-card);
   padding: 8px;
+  margin: auto;
   text-align: center;
-  font-family: var(--font-main);
+  font-family: var(--font-title);
   color: var(--color-text-primary);
-  height: 3em; 
-
+  height: 3em;
+  letter-spacing: 0.5px;
+  border-top: 2px solid rgba(212, 175, 55, 0.3);
 }

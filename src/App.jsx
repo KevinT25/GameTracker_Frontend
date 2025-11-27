@@ -8,6 +8,7 @@ import Confi from './componentes/componente_Perfil/Confi'
 import Noticies from './componentes/componente_Foro/Noticie'
 import VerPerfil from './componentes/componente_Perfil/VerPerfil'
 import Ranking from './componentes/componente_General/Ranking'
+import Download from './componentes/componente_General/Download'
 import Home from './pages/Home'
 import Perfil from './pages/Perfil'
 import Biblioteca from './pages/Biblioteca'
@@ -23,6 +24,7 @@ function App() {
         <Route path="/perfil/:id" element={<VerPerfil />} />
         <Route path="/Confi" element={<Confi />} />
         <Route path="/info/:id" element={<Info />} />
+        <Route path="/Download" element={<Download />} />
         <Route path="/foro" element={<Foro />} />
         <Route path="/Noticies" element={<Noticies />} />
         <Route path="/Ranking" element={<Ranking />} />
