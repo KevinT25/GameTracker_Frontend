@@ -7,10 +7,17 @@ function Download() {
   return (
     <iframe
       src={iframeUrl}
-      style={{ width: '90vw', height: '85vh', border: 'none' }}
-      allowFullScreen="true"
+      style={{
+        width: '90vw',
+        height: '85vh',
+        margin: 'auto',
+        padding: '0',
+        border: 'none',
+        overflow: 'hidden',
+        display: 'block',
+      }}
+      allowFullScreen
       frameborder="0"
-      scrolling="no"
     />
   )
 }

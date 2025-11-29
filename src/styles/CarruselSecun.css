@@ -6,7 +6,7 @@
 }
 
 .titulo-categoria {
-  font-family: var(--font-title);
+  font-family: var(--font-ornament);
   color: var(--color-text-primary);
   font-size: clamp(1rem, 2vw, 2rem);
   margin-bottom: 20px;

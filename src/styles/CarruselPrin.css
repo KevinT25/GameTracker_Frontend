@@ -53,8 +53,8 @@
   border-radius: var(--radius-md);
   padding: 5px 10px;
   margin-top: 10px;
-  font-size: 1rem;
   color: var(--color-text-primary);
+  font-family: var(--font-ornament);
   font-size: clamp(18px, 1.5vw, 3rem);
   pointer-events: auto;
   cursor: pointer;
