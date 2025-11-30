@@ -28,6 +28,7 @@ function VerPerfil() {
         setUsuario(null) // Evitar crash
       }
     }
+    
     console.log('actualizado')
     // --- Obtener Stats ---
     const obtenerStats = async () => {

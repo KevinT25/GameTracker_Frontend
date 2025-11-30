@@ -5,27 +5,41 @@ import Respuesta from './Respuesta'
 import tiempoCarga3 from '../../assets/loadingGif/tiempoCarga3.gif'
 
 function ListaResenias() {
-  const [reseñas, setReseñas] = useState([])
+  const [items, setItems] = useState([])
   const [filtro, setFiltro] = useState('')
+  const [vista, setVista] = useState('juegos')
   const [loading, setLoading] = useState(true)
-  const [selectedResenia, setSelectedResenia] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate()
 
   const API_URL = import.meta.env.VITE_API_URL
-  // Cargar reseñas
+
+  // Cargar reseñas + publicaciones
   useEffect(() => {
     setLoading(true)
     const timeout = setTimeout(() => setLoading(false), 7000)
-    const API_URL = import.meta.env.VITE_API_URL
-    fetch(`${API_URL}/api/reviews`)
-      .then((res) => res.json())
-      .then((data) => {
-        setReseñas(data)
+
+    Promise.all([
+      fetch(`${API_URL}/api/reviews`).then((res) => res.json()),
+      fetch(`${API_URL}/api/comunidad`).then((res) => res.json()),
+    ])
+      .then(([reviews, publicaciones]) => {
+        const reviewsFormateadas = reviews.map((r) => ({
+          ...r,
+          tipo: 'review',
+        }))
+
+        const publicacionesFormateadas = publicaciones.map((p) => ({
+          ...p,
+          tipo: 'publicacion',
+        }))
+
+        setItems([...reviewsFormateadas, ...publicacionesFormateadas])
         setLoading(false)
       })
       .catch((err) => {
-        console.error('Error al cargar reseñas:', err)
+        console.error('Error cargando datos:', err)
         setLoading(false)
       })
       .finally(() => clearTimeout(timeout))
@@ -35,17 +49,14 @@ function ListaResenias() {
     navigate(`/perfil/${id}`)
   }
 
-  // Abrir modal de respuesta
-  const abrirModal = (resenia) => {
-    setSelectedResenia(resenia)
+  const abrirModal = (item) => {
+    setSelectedItem(item)
     setShowModal(true)
   }
 
-  // Enviar respuesta desde modal
-  const enviarRespuesta = async (idReseña, respuesta) => {
+  const enviarRespuesta = async (id, respuesta) => {
     const storedUser = localStorage.getItem('user')
     if (!storedUser) {
-      console.warn('Usuario no logueado, abriendo modal...')
       window.dispatchEvent(new Event('openLoginModal'))
       return
     }
@@ -53,90 +64,163 @@ function ListaResenias() {
     const user = JSON.parse(storedUser)
     const userId = user._id || user.id
 
+    const endpoint =
+      selectedItem.tipo === 'review'
+        ? `${API_URL}/api/reviews/${id}/responder`
+        : `${API_URL}/api/publicaciones/${id}/comentar`
+
     try {
-      const res = await fetch(`${API_URL}/api/reviews/${idReseña}/responder`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          respuesta,
-          usuarioId: userId,
-        }),
+        body: JSON.stringify({ respuesta, usuarioId: userId }),
       })
 
       const data = await res.json()
 
       if (res.ok) {
-        // data ya contiene la reseña completa y actualizada
-        setReseñas((prev) => prev.map((r) => (r._id === idReseña ? data : r)))
+        setItems((prev) => prev.map((r) => (r._id === id ? data : r)))
       } else {
-        console.error('Error al responder:', data.error)
         alert(`Error: ${data.error}`)
       }
     } catch (err) {
-      console.error('Error al enviar respuesta:', err)
+      console.error(err)
     } finally {
       setShowModal(false)
     }
   }
 
-  // Filtrar reseñas por nombre del juego
-  const reseñasFiltradas = reseñas.filter(
-    (r) =>
-      r.juegoId?.titulo?.toLowerCase().includes(filtro.toLowerCase()) ||
-      r.nombreUsuario?.toLowerCase().includes(filtro.toLowerCase())
-  )
+  // Filtro por texto + tipo de vista
+  const itemsFiltrados = items.filter((r) => {
+    const coincideFiltro =
+      r.nombreUsuario?.toLowerCase().includes(filtro.toLowerCase()) ||
+      r.textoResenia?.toLowerCase().includes(filtro.toLowerCase()) ||
+      r.asunto?.toLowerCase().includes(filtro.toLowerCase()) ||
+      r.juegoId?.titulo?.toLowerCase().includes(filtro.toLowerCase())
+
+    if (!coincideFiltro) return false
+
+    switch (vista) {
+      case 'juegos':
+        return r.tipo === 'review'
+      case 'generales':
+        return r.tipo === 'publicacion' && r.tag === 'general'
+      case 'fanart':
+        return r.tipo === 'publicacion' && r.tag === 'fanart'
+      case 'noticias':
+        return r.tipo === 'publicacion' && r.tag === 'noticia'
+      default:
+        return true
+    }
+  })
 
   if (loading) return <Loader imagen={tiempoCarga3} />
 
   return (
     <div className="lista-reseñas-container">
       <header className="lista-reseñas-header">
-        <h1 className="lista-reseñas-titulo">Comparte tu experiencia</h1>
+        <h1 className="lista-reseñas-titulo">Comunidad</h1>
         <p className="lista-reseñas-subtitulo">
-          Comparte y descubre opiniones de toda la comunidad
+          Explora publicaciones y participa en la comunidad
         </p>
       </header>
 
+      {/* Botón crear */}
+      <button
+        className="btn-crear-publicacion"
+        onClick={() => {
+          if (vista === 'juegos') {
+            navigate(`/comunidad/nueva?tipo=review`)
+          } else {
+            navigate(`/comunidad/nueva?tipo=${vista}`)
+          }
+        }}
+      >
+        ➕ Crear{' '}
+        {vista === 'juegos'
+          ? 'reseña de juego'
+          : vista === 'generales'
+          ? 'reseña general'
+          : vista}
+      </button>
+
+      {/* Selector de vistas */}
+      <div className="vista-selector">
+        <button
+          className={vista === 'juegos' ? 'vista-btn active' : 'vista-btn'}
+          onClick={() => setVista('juegos')}
+        >
+          🎮 Reseñas de juegos
+        </button>
+
+        <button
+          className={vista === 'generales' ? 'vista-btn active' : 'vista-btn'}
+          onClick={() => setVista('generales')}
+        >
+          📝 Reseñas generales
+        </button>
+
+        <button
+          className={vista === 'fanart' ? 'vista-btn active' : 'vista-btn'}
+          onClick={() => setVista('fanart')}
+        >
+          🖼️ Fanarts
+        </button>
+
+        <button
+          className={vista === 'noticias' ? 'vista-btn active' : 'vista-btn'}
+          onClick={() => setVista('noticias')}
+        >
+          📰 Noticias
+        </button>
+      </div>
+
+      {/* Filtro */}
       <div className="lista-reseñas-filtro">
         <input
           type="text"
           value={filtro}
           onChange={(e) => setFiltro(e.target.value)}
-          placeholder="Filtrar por nombre del juego..."
+          placeholder="Buscar por texto, usuario o juego..."
           className="input-filtro"
         />
       </div>
 
-      {reseñasFiltradas.length > 0 ? (
+      {/* LISTADO */}
+      {itemsFiltrados.length > 0 ? (
         <div className="lista-reseñas-items">
-          {reseñasFiltradas.map((r) => (
+          {itemsFiltrados.map((r) => (
             <div key={r._id} className="reseña-item">
               <details className="reseña-details">
                 <summary className="reseña-summary">
                   <div className="reseña-summary-info">
-                    <img
-                      src={r.juegoId?.imagenPortada || r.juego}
-                      alt={r.juegoId?.titulo || 'Sin título'}
-                      className="reseña-imagenPortada"
-                    />
+                    {/* Imagen solo para reviews */}
+                    {r.tipo === 'review' && r.juegoId?.imagenPortada && (
+                      <img
+                        src={r.juegoId?.imagenPortada}
+                        alt={r.juegoId?.titulo}
+                        className="reseña-imagenPortada"
+                      />
+                    )}
+
                     <div className="reseña-info">
                       <strong className="reseña-titulo">
-                        {r.juegoId?.titulo}
+                        {r.tipo === 'review'
+                          ? r.juegoId?.titulo
+                          : r.asunto || r.tag?.toUpperCase()}
                       </strong>
+
                       <button
                         onDoubleClick={() =>
                           verPerfil(r.usuarioId?._id || r.usuarioId)
                         }
                         className="btn-amigo"
-                        data-tooltip="Visitar perfil"
                       >
                         <p className="reseña-usuario">Por: {r.nombreUsuario}</p>
                       </button>
-                      <p className="reseña-recomendaria">
-                        {r.recomendaria ? 'Recomendado' : 'No recomendado'}
-                      </p>
                     </div>
                   </div>
+
                   <button
                     className="btn-responder"
                     onClick={(e) => {
@@ -149,28 +233,24 @@ function ListaResenias() {
                 </summary>
 
                 <div className="reseña-contenido">
-                  <div className="datos-reseña">
-                    <p id="reseña-dificultad">
-                      Asunto: {r.dificultad || 'No especificada'}
-                    </p>
-                    <p id="reseña-horasJugadas">
-                      Horas jugadas: {r.horasJugadas}
-                    </p>
-                  </div>
-                  <p className="reseña-texto">{r.textoResenia}</p>
+                  {/* Solo para reseñas de juegos */}
+                  {r.tipo === 'review' && (
+                    <div className="datos-reseña">
+                      <p>Horas jugadas: {r.horasJugadas}</p>
+                      <p>Recomendado: {r.recomendaria ? 'Sí' : 'No'}</p>
+                    </div>
+                  )}
 
-                  {/* Respuestas */}
-                  {r.respuestas && r.respuestas.length > 0 && (
+                  <p className="reseña-texto">
+                    {r.textoResenia || r.contenido}
+                  </p>
+
+                  {/* Comentarios */}
+                  {r.comentarios && r.comentarios.length > 0 && (
                     <div className="reseña-respuestas">
-                      {r.respuestas.map((resp) => (
-                        <div
-                          key={resp._id || Math.random()}
-                          className="respuesta-item"
-                        >
-                          <strong>
-                            {resp.usuarioId?.nombre || 'Usuario anónimo'}
-                          </strong>
-                          : {resp.texto}
+                      {r.comentarios.map((c) => (
+                        <div key={c._id} className="respuesta-item">
+                          <strong>{c.nombreUsuario}</strong>: {c.texto}
                         </div>
                       ))}
                     </div>
@@ -181,12 +261,12 @@ function ListaResenias() {
           ))}
         </div>
       ) : (
-        <p>No hay reseñas disponibles.</p>
+        <p>No hay publicaciones disponibles.</p>
       )}
 
-      {showModal && selectedResenia && (
+      {showModal && selectedItem && (
         <Respuesta
-          reseña={selectedResenia}
+          reseña={selectedItem}
           onClose={() => setShowModal(false)}
           onSubmit={enviarRespuesta}
         />
