@@ -6,6 +6,7 @@ import Login from './componentes/componente_General/Login'
 import Info from './componentes/componente_General/Info'
 import Confi from './componentes/componente_Perfil/Confi'
 import Noticies from './componentes/componente_Foro/Noticie'
+import Comunidad from './componentes/componente_Foro/Comunidad'
 import VerPerfil from './componentes/componente_Perfil/VerPerfil'
 import Ranking from './componentes/componente_General/Ranking'
 import Download from './componentes/componente_General/Download'
@@ -26,6 +27,7 @@ function App() {
         <Route path="/info/:id" element={<Info />} />
         <Route path="/Download" element={<Download />} />
         <Route path="/foro" element={<Foro />} />
+        <Route path="/comunidad/tipo=:tipo" element={<Comunidad />} />
         <Route path="/Noticies" element={<Noticies />} />
         <Route path="/Ranking" element={<Ranking />} />
         <Route path="/biblioteca" element={<Biblioteca />} />

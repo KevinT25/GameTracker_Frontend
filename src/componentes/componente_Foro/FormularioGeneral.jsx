@@ -1,15 +1,16 @@
 import { useState } from 'react'
 
-function FormularioReseniaGeneral({ onPublicacionCreada }) {
+function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
   const [titulo, setTitulo] = useState('')
   const [contenido, setContenido] = useState('')
-  const [tag, setTag] = useState('general')
   const [likes, setLikes] = useState(0)
 
   const [mensaje, setMensaje] = useState('')
   const [cargando, setCargando] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL
+
+  const endpoint = `${API_URL}/api/comunidad/${tipo}`
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -28,29 +29,36 @@ function FormularioReseniaGeneral({ onPublicacionCreada }) {
     setCargando(true)
 
     try {
-      const res = await fetch(`${API_URL}/api/comunidad/resenias-generales`, {
+      const storedUser = localStorage.getItem('user')
+      if (!storedUser) {
+        window.dispatchEvent(new Event('openLoginModal'))
+        return
+      }
+
+      const user = JSON.parse(storedUser)
+      const userId = user._id || user.id
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           titulo,
           contenido,
-          tag,
+          tag: tipo,
           likes,
+          usuarioId: userId,
+          nombreUsuario: user.nombre,
         }),
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error al publicar reseña')
+      if (!res.ok) throw new Error(data.error || 'Error al publicar')
 
       setMensaje('Publicado correctamente ✔')
-
-      // limpiar formulario
       setTitulo('')
       setContenido('')
-      setTag('general')
       setLikes(0)
 
-      // notificar al padre si existe callback
       if (onPublicacionCreada) onPublicacionCreada(data)
     } catch (err) {
       setMensaje(err.message)
@@ -60,8 +68,8 @@ function FormularioReseniaGeneral({ onPublicacionCreada }) {
   }
 
   return (
-    <div className="form-resenia-general">
-      <h3>Crear Reseña General</h3>
+    <div className="form-resenia-general popup">
+      <h3>Crear {tipo}</h3>
 
       {mensaje && <p className="mensaje">{mensaje}</p>}
 
@@ -77,27 +85,15 @@ function FormularioReseniaGeneral({ onPublicacionCreada }) {
         </label>
 
         <label>
-          Tag / Categoría:
-          <select value={tag} onChange={(e) => setTag(e.target.value)}>
-            <option value="general">General</option>
-            <option value="reseña">Reseña</option>
-            <option value="noticia">Noticia</option>
-            <option value="discusion">Discusión</option>
-            <option value="pregunta">Pregunta</option>
-          </select>
-        </label>
-
-        <label>
           Contenido:
           <textarea
             rows={4}
             value={contenido}
             onChange={(e) => setContenido(e.target.value)}
-            placeholder="Escribe tu reseña..."
+            placeholder="Escribe aquí..."
           ></textarea>
         </label>
 
-        {/* Sistema de votos */}
         <div className="votacion">
           <p>Votar esta publicación:</p>
           <button type="button" onClick={() => setLikes(likes + 1)}>
@@ -106,7 +102,7 @@ function FormularioReseniaGeneral({ onPublicacionCreada }) {
         </div>
 
         <button type="submit" disabled={cargando}>
-          {cargando ? 'Publicando...' : 'Publicar Reseña'}
+          {cargando ? 'Publicando...' : 'Publicar'}
         </button>
       </form>
     </div>

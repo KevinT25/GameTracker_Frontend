@@ -90,11 +90,12 @@ function ListaResenias() {
     }
   }
 
-  // Filtro por texto + tipo de vista
+  // Filtro por texto + tipo
   const itemsFiltrados = items.filter((r) => {
     const coincideFiltro =
       r.nombreUsuario?.toLowerCase().includes(filtro.toLowerCase()) ||
       r.textoResenia?.toLowerCase().includes(filtro.toLowerCase()) ||
+      r.contenido?.toLowerCase().includes(filtro.toLowerCase()) ||
       r.asunto?.toLowerCase().includes(filtro.toLowerCase()) ||
       r.juegoId?.titulo?.toLowerCase().includes(filtro.toLowerCase())
 
@@ -125,7 +126,7 @@ function ListaResenias() {
         </p>
       </header>
 
-      {/* Botón crear */}
+      {/* Botón Crear */}
       <button
         className="btn-crear-publicacion"
         onClick={() => {
@@ -197,8 +198,8 @@ function ListaResenias() {
                     {/* Imagen solo para reviews */}
                     {r.tipo === 'review' && r.juegoId?.imagenPortada && (
                       <img
-                        src={r.juegoId?.imagenPortada}
-                        alt={r.juegoId?.titulo}
+                        src={r.juegoId.imagenPortada}
+                        alt={r.juegoId.titulo}
                         className="reseña-imagenPortada"
                       />
                     )}
@@ -233,7 +234,6 @@ function ListaResenias() {
                 </summary>
 
                 <div className="reseña-contenido">
-                  {/* Solo para reseñas de juegos */}
                   {r.tipo === 'review' && (
                     <div className="datos-reseña">
                       <p>Horas jugadas: {r.horasJugadas}</p>
@@ -245,7 +245,6 @@ function ListaResenias() {
                     {r.textoResenia || r.contenido}
                   </p>
 
-                  {/* Comentarios */}
                   {r.comentarios && r.comentarios.length > 0 && (
                     <div className="reseña-respuestas">
                       {r.comentarios.map((c) => (
