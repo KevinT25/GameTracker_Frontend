@@ -27,7 +27,8 @@ function App() {
         <Route path="/info/:id" element={<Info />} />
         <Route path="/Download" element={<Download />} />
         <Route path="/foro" element={<Foro />} />
-        <Route path="/comunidad/tipo=:tipo" element={<Comunidad />} />
+        <Route path="/comunidad" element={<Comunidad />} />
+        <Route path="/comunidad/crear/:tipo" element={<Comunidad />} />
         <Route path="/Noticies" element={<Noticies />} />
         <Route path="/Ranking" element={<Ranking />} />
         <Route path="/biblioteca" element={<Biblioteca />} />

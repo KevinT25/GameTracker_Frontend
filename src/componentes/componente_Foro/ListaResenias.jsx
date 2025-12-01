@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Loader from '../componente_General/Loading'
 import Respuesta from './Respuesta'
+import FormularioReseniaGeneral from './FormularioGeneral'
 import tiempoCarga3 from '../../assets/loadingGif/tiempoCarga3.gif'
 
 function ListaResenias() {
@@ -11,12 +12,15 @@ function ListaResenias() {
   const [loading, setLoading] = useState(true)
   const [selectedItem, setSelectedItem] = useState(null)
   const [showModal, setShowModal] = useState(false)
-  const navigate = useNavigate()
 
+  const [showFormGeneral, setShowFormGeneral] = useState(false)
+  const [tipoNuevaPublicacion, setTipoNuevaPublicacion] = useState('general')
+
+  const navigate = useNavigate()
   const API_URL = import.meta.env.VITE_API_URL
 
   // Cargar reseñas + publicaciones
-  useEffect(() => {
+  const cargarTodo = () => {
     setLoading(true)
     const timeout = setTimeout(() => setLoading(false), 7000)
 
@@ -43,6 +47,10 @@ function ListaResenias() {
         setLoading(false)
       })
       .finally(() => clearTimeout(timeout))
+  }
+
+  useEffect(() => {
+    cargarTodo()
   }, [])
 
   const verPerfil = (id) => {
@@ -130,11 +138,8 @@ function ListaResenias() {
       <button
         className="btn-crear-publicacion"
         onClick={() => {
-          if (vista === 'juegos') {
-            navigate(`/comunidad/nueva?tipo=review`)
-          } else {
-            navigate(`/comunidad/nueva?tipo=${vista}`)
-          }
+          setTipoNuevaPublicacion(vista)
+          setShowFormGeneral(true)
         }}
       >
         ➕ Crear{' '}
@@ -195,7 +200,6 @@ function ListaResenias() {
               <details className="reseña-details">
                 <summary className="reseña-summary">
                   <div className="reseña-summary-info">
-                    {/* Imagen solo para reviews */}
                     {r.tipo === 'review' && r.juegoId?.imagenPortada && (
                       <img
                         src={r.juegoId.imagenPortada}
@@ -263,12 +267,27 @@ function ListaResenias() {
         <p>No hay publicaciones disponibles.</p>
       )}
 
+      {/* Modal Respuestas */}
       {showModal && selectedItem && (
         <Respuesta
           reseña={selectedItem}
           onClose={() => setShowModal(false)}
           onSubmit={enviarRespuesta}
         />
+      )}
+
+      {/* Modal Crear Publicación */}
+      {showFormGeneral && (
+        <div className="overlay-general">
+          <FormularioReseniaGeneral
+            tipo={tipoNuevaPublicacion}
+            onClose={() => setShowFormGeneral(false)}
+            onCreated={() => {
+              setShowFormGeneral(false)
+              cargarTodo()
+            }}
+          />
+        </div>
       )}
     </div>
   )

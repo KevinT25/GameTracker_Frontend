@@ -39,7 +39,8 @@ function Respuesta({ reseña, onClose, onSubmit }) {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder="Escribe tu respuesta (Enter para enviar)"
+          placeholder="Escribe tu respuesta"
+          className="respuesta-modal-textarea"
         />
 
         <div className="respuesta-modal-acciones">

@@ -1,20 +1,18 @@
 import { useState } from 'react'
+import { authFetch } from '../../helpers/authFetch'
 
 function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
   const [titulo, setTitulo] = useState('')
   const [contenido, setContenido] = useState('')
-  const [likes, setLikes] = useState(0)
-
   const [mensaje, setMensaje] = useState('')
   const [cargando, setCargando] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL
 
-  const endpoint = `${API_URL}/api/comunidad/${tipo}`
-
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Validaciones
     if (titulo.trim().length < 3) {
       setMensaje('El título debe tener al menos 3 caracteres.')
       return
@@ -25,39 +23,34 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
       return
     }
 
+    // Verificar si hay token (usuario logueado)
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setMensaje('Debes iniciar sesión para publicar.')
+      window.dispatchEvent(new Event('openLoginModal'))
+      return
+    }
+
     setMensaje('')
     setCargando(true)
 
     try {
-      const storedUser = localStorage.getItem('user')
-      if (!storedUser) {
-        window.dispatchEvent(new Event('openLoginModal'))
-        return
-      }
-
-      const user = JSON.parse(storedUser)
-      const userId = user._id || user.id
-
-      const res = await fetch(endpoint, {
+      const res = await authFetch(`${API_URL}/api/comunidad`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           titulo,
           contenido,
           tag: tipo,
-          likes,
-          usuarioId: userId,
-          nombreUsuario: user.nombre,
         }),
       })
 
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error || 'Error al publicar')
 
-      setMensaje('Publicado correctamente ✔')
+      setMensaje('Publicado correctamente')
       setTitulo('')
       setContenido('')
-      setLikes(0)
 
       if (onPublicacionCreada) onPublicacionCreada(data)
     } catch (err) {
@@ -93,13 +86,6 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
             placeholder="Escribe aquí..."
           ></textarea>
         </label>
-
-        <div className="votacion">
-          <p>Votar esta publicación:</p>
-          <button type="button" onClick={() => setLikes(likes + 1)}>
-            👍 {likes}
-          </button>
-        </div>
 
         <button type="submit" disabled={cargando}>
           {cargando ? 'Publicando...' : 'Publicar'}
