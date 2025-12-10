@@ -29,54 +29,60 @@ function InfoJuego({ setJuegos }) {
   const [juego, setJuego] = useState(null)
   const [reseñas, setReseñas] = useState([])
   const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
+  const [comentarioTextoPorReview, setComentarioTextoPorReview] = useState({})
+  const [mostrarFormularioComentario, setMostrarFormularioComentario] =
+    useState(null)
   const API_URL = import.meta.env.VITE_API_URL
 
-  // Leer usuario desde localStorage desde el primer render (evita delay)
   const usuarioLS = JSON.parse(localStorage.getItem('user') || 'null')
   const [user, setUser] = useState(usuarioLS)
+
+  const getUserId = () => user?._id || user?.id || null
+  const getUserName = () => user?.nombre || user?.username || null
 
   useEffect(() => {
     let cancelled = false
     const controller = new AbortController()
     setLoading(true)
 
-    const userId = user?._id || user?.id || null
+    const userId = getUserId()
 
     const cargarDatos = async () => {
       try {
-        // lanzar fetchs en paralelo (con abort)
         const gameFetch = fetch(`${API_URL}/api/games/games/${id}`, {
           signal: controller.signal,
         })
-        const reviewsFetch = fetch(`${API_URL}/api/reviews/game/${id}`, {
+
+        const reviewsFetch = fetch(`${API_URL}/api/reviews/juego/${id}`, {
           signal: controller.signal,
         })
 
-        // relación solo si hay userId; sino devolvemos mock con ok=false
         const relationFetch = userId
           ? authFetch(`${API_URL}/api/dataUser/usuario/${userId}`, {
               signal: controller.signal,
             })
-          : Promise.resolve({ ok: false, status: 204, json: async () => [] })
+          : Promise.resolve({
+              ok: false,
+              status: 204,
+              json: async () => [],
+            })
 
-        // Esperar resultados
         const [gameRes, relationRes, reviewsRes] = await Promise.all(
           [gameFetch, relationFetch, reviewsFetch].map((p) =>
             p.then((r) => r).catch((err) => ({ ok: false, error: err }))
           )
         )
+
         if (cancelled) return
 
-        // Procesar juego
         if (gameRes && gameRes.ok) {
           const dataJuego = await gameRes.json()
 
-          // Procesar relación
           let dataRelacion = []
           if (relationRes && relationRes.ok) {
             try {
               dataRelacion = await relationRes.json()
-            } catch (e) {
+            } catch {
               dataRelacion = []
             }
           }
@@ -97,11 +103,7 @@ function InfoJuego({ setJuegos }) {
 
           setJuego(enriched)
         } else {
-          // Si falla el fetch del juego, dejamos juego en null
-          console.error(
-            'Error obteniendo datos del juego',
-            gameRes?.error || gameRes
-          )
+          console.error('Error obteniendo datos del juego', gameRes)
           setJuego(null)
         }
 
@@ -109,19 +111,15 @@ function InfoJuego({ setJuegos }) {
           try {
             const dataReseñas = await reviewsRes.json()
             setReseñas(Array.isArray(dataReseñas) ? dataReseñas : [])
-          } catch (e) {
+          } catch {
             setReseñas([])
           }
         } else {
-          console.error(
-            'Error cargando reseñas',
-            reviewsRes?.error || reviewsRes
-          )
+          console.error('Error cargando reseñas', reviewsRes)
           setReseñas([])
         }
       } catch (err) {
-        if (err.name === 'AbortError') {
-        } else {
+        if (err.name !== 'AbortError') {
           console.error('Error en InfoJuego (catch):', err)
         }
       } finally {
@@ -135,20 +133,16 @@ function InfoJuego({ setJuegos }) {
       cancelled = true
       controller.abort()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user ? user._id || user.id : null])
 
-  // Escuchar evento global de login/logout
   useEffect(() => {
     const manejarAuth = (e) => {
       const logueado = e.detail?.logueado
 
       if (logueado) {
-        // Si el usuario inicia sesión → cargar desde localStorage
         const u = JSON.parse(localStorage.getItem('user') || 'null')
         setUser(u)
       } else {
-        // Si cierra sesión
         setUser(null)
       }
     }
@@ -159,10 +153,10 @@ function InfoJuego({ setJuegos }) {
       dejarDeEscuchar(eventoAuth.nombre, manejarAuth)
     }
   }, [])
-  // Actualizar estado usuario-juego
+
   const actualizarEstado = async (juegoId, campo, valor) => {
     try {
-      let userId = user?._id || user?.id
+      let userId = getUserId()
 
       if (!userId) {
         const saved = localStorage.getItem('user')
@@ -173,7 +167,7 @@ function InfoJuego({ setJuegos }) {
       }
 
       if (!userId) {
-        console.warn('Usuario no logueado, abriendo modal...')
+        // ABRIR MODAL DE LOGIN
         window.dispatchEvent(new Event('openLoginModal'))
         return
       }
@@ -207,25 +201,64 @@ function InfoJuego({ setJuegos }) {
     }
   }
 
-  // Nueva reseña
   const handleReseniaEnviada = (nueva) => {
     setReseñas((prev) => [nueva, ...prev])
   }
 
-  // Enviar respuesta
-  const handleEnviarRespuesta = async (reseñaId, texto) => {
-    if (!user?._id && !user?.id) {
-      return alert('Debes iniciar sesión para responder.')
+  const crearComentario = async (reviewId) => {
+    const texto = (comentarioTextoPorReview[reviewId] || '').trim()
+    if (!texto) return alert('El comentario no puede estar vacío.')
+
+    const userId = getUserId()
+    if (!userId) {
+      window.dispatchEvent(new Event('openLoginModal'))
+      return
     }
 
     try {
       const res = await authFetch(
-        `${API_URL}/api/reviews/${reseñaId}/responder`,
+        `${API_URL}/api/reviews/${reviewId}/comentarios`,
         {
           method: 'POST',
           body: JSON.stringify({
-            respuesta: texto,
-            usuarioId: user._id || user.id,
+            usuarioId: userId,
+            texto,
+          }),
+        }
+      )
+
+      if (!res.ok) throw new Error('Error creando comentario')
+
+      const actualizada = await res.json()
+      setReseñas((prev) =>
+        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
+      )
+      setComentarioTextoPorReview((s) => ({ ...s, [reviewId]: '' }))
+      setMostrarFormularioComentario(null)
+    } catch (err) {
+      console.error('Error creando comentario:', err)
+      alert('No se pudo crear el comentario.')
+    }
+  }
+
+  const handleEnviarRespuesta = async (reseñaId, comentarioId, texto) => {
+    if (!texto || !texto.trim())
+      return alert('La respuesta no puede estar vacía.')
+
+    const userId = getUserId()
+    if (!userId) {
+      window.dispatchEvent(new Event('openLoginModal'))
+      return
+    }
+
+    try {
+      const res = await authFetch(
+        `${API_URL}/api/reviews/${reseñaId}/comentarios/${comentarioId}/responder`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            usuarioId: userId,
+            texto,
           }),
         }
       )
@@ -233,15 +266,66 @@ function InfoJuego({ setJuegos }) {
       if (!res.ok) throw new Error('Error enviando respuesta')
 
       const actualizada = await res.json()
-
       setReseñas((prev) =>
         prev.map((r) => (r._id === actualizada._id ? actualizada : r))
       )
-
       setReseniaSeleccionada(null)
     } catch (err) {
       console.error('Error respuesta:', err)
       alert('Hubo un problema al responder.')
+    }
+  }
+
+  const votarReview = async (reviewId, voto) => {
+    const userId = getUserId()
+    if (!userId) {
+      window.dispatchEvent(new Event('openLoginModal'))
+      return
+    }
+
+    try {
+      const res = await authFetch(`${API_URL}/api/reviews/votar/${reviewId}`, {
+        method: 'POST',
+        body: JSON.stringify({ usuarioId: userId, voto }),
+      })
+
+      if (!res.ok) throw new Error('Error votando reseña')
+
+      const actualizada = await res.json()
+      setReseñas((prev) =>
+        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
+      )
+    } catch (err) {
+      console.error('Error votando reseña:', err)
+      alert('No se pudo registrar el voto.')
+    }
+  }
+
+  const votarRespuesta = async (reviewId, respuestaId, voto) => {
+    const userId = getUserId()
+    if (!userId) {
+      window.dispatchEvent(new Event('openLoginModal'))
+      return
+    }
+
+    try {
+      const res = await authFetch(
+        `${API_URL}/api/reviews/${reviewId}/respuesta/${respuestaId}/votar`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ usuarioId: userId, voto }),
+        }
+      )
+
+      if (!res.ok) throw new Error('Error votando respuesta')
+
+      const actualizada = await res.json()
+      setReseñas((prev) =>
+        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
+      )
+    } catch (err) {
+      console.error('Error votando respuesta:', err)
+      alert('No se pudo registrar el voto en la respuesta.')
     }
   }
 
@@ -251,7 +335,6 @@ function InfoJuego({ setJuegos }) {
     })
   }
 
-  // Render
   if (loading) return <Loader imagen={tiempoCarga4} />
   if (!juego) return <p>No se encontró el juego.</p>
 
@@ -317,79 +400,213 @@ function InfoJuego({ setJuegos }) {
       </div>
 
       <FormularioResenias
-        juegoId={juego._id}
-        usuarioId={user?._id || user?.id}
-        nombreUsuario={user?.nombre}
+        juegoId={juego._id || juego.id}
+        usuarioId={getUserId()}
+        nombreUsuario={getUserName()}
         onReseniaEnviada={handleReseniaEnviada}
       />
 
-      <div className="reseña">
-        <h3>Reseñas de usuarios</h3>
+      {reseñas.map((r) => (
+        <div key={r._id} className="reseña-item">
+          <details className="reseña-details">
+            <summary className="reseña-summary">
+              <div className="reseña-info">
+                <strong>{r.usuarioId?.nombre || 'Anónimo'}</strong>
 
-        {reseñas.length === 0 && <p>No hay reseñas aún.</p>}
-
-        {reseñas.map((r) => (
-          <div key={r._id} className="reseña-item">
-            <details className="reseña-details">
-              <summary className="reseña-summary">
-                <div className="reseña-info">
-                  <strong>{r.usuarioId?.nombre || 'Anónimo'}</strong>
-
-                  <div className="grimorios-puntuacion">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <img
-                        key={n}
-                        src={
-                          n <= r.puntuacion ? iconGrimorio : iconGrimorioVacio
-                        }
-                        className="grimorio"
-                      />
-                    ))}
-                  </div>
+                <div className="grimorios-puntuacion">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <img
+                      key={n}
+                      src={n <= r.puntuacion ? iconGrimorio : iconGrimorioVacio}
+                      className="grimorio"
+                    />
+                  ))}
                 </div>
+              </div>
 
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <button
-                  className="btn-responder"
+                  className="btn-votar"
                   onClick={(e) => {
                     e.preventDefault()
-                    setReseniaSeleccionada(r)
+                    votarReview(r._id, 1)
                   }}
+                  title="Me gusta"
                 >
-                  Responder
+                  👍
                 </button>
-              </summary>
 
-              <div className="reseña-contenido">
-                <div className="info-reseña">
-                  <p>Asunto: {r.dificultad || 'No especificada'}</p>
-                  <p className="hr-jugadas">Horas jugadas: {r.horasJugadas}</p>
-                </div>
+                <button
+                  className="btn-votar"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    votarReview(r._id, -1)
+                  }}
+                  title="No me gusta"
+                >
+                  👎
+                </button>
 
-                <p className="reseña-texto">{r.textoResenia}</p>
+                <span>
+                  {r.votos ? r.votos.reduce((s, v) => s + v.voto, 0) : 0}
+                </span>
+              </div>
+            </summary>
 
-                {r.respuestas?.length > 0 && (
-                  <div className="reseña-respuestas">
-                    {r.respuestas.map((resp, i) => (
-                      <div key={i} className="respuesta-item">
-                        <strong>{resp.usuarioId?.nombre || 'Anónimo'}:</strong>
-                        {resp.texto}
-                      </div>
-                    ))}
-                  </div>
+            <div className="reseña-contenido">
+              <div className="info-reseña">
+                <p>Asunto: {r.asunto || 'No especificada'}</p>
+                <p className="hr-jugadas">Horas jugadas: {r.horasJugadas}</p>
+              </div>
+
+              <p className="reseña-texto">{r.textoResenia}</p>
+
+              <div style={{ marginTop: 8 }}>
+                {mostrarFormularioComentario === r._id ? (
+                  <>
+                    <textarea
+                      rows={2}
+                      value={comentarioTextoPorReview[r._id] || ''}
+                      onChange={(e) =>
+                        setComentarioTextoPorReview((s) => ({
+                          ...s,
+                          [r._id]: e.target.value,
+                        }))
+                      }
+                      placeholder="Escribe un comentario..."
+                    />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                      <button onClick={() => crearComentario(r._id)}>
+                        Comentar
+                      </button>
+                      <button
+                        onClick={() => setMostrarFormularioComentario(null)}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <button onClick={() => setMostrarFormularioComentario(r._id)}>
+                    Añadir comentario
+                  </button>
                 )}
               </div>
-            </details>
-          </div>
-        ))}
 
-        {reseniaSeleccionada && (
-          <Respuesta
-            reseña={reseniaSeleccionada}
-            onClose={() => setReseniaSeleccionada(null)}
-            onSubmit={handleEnviarRespuesta}
-          />
-        )}
-      </div>
+              {r.comentarios?.length > 0 && (
+                <div className="reseña-respuestas" style={{ marginTop: 12 }}>
+                  {r.comentarios.map((comentario) => (
+                    <div
+                      key={comentario._id}
+                      className="comentario-item"
+                      style={{
+                        padding: 8,
+                        borderLeft: '2px solid #eee',
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <strong>
+                          {comentario.usuarioId?.nombre || 'Anónimo'}
+                        </strong>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: 8,
+                            alignItems: 'center',
+                          }}
+                        >
+                          <button
+                            onClick={() =>
+                              setReseniaSeleccionada({
+                                ...r,
+                                comentarioId: comentario._id,
+                              })
+                            }
+                          >
+                            Responder
+                          </button>
+                        </div>
+                      </div>
+
+                      <p style={{ marginTop: 6 }}>{comentario.texto}</p>
+
+                      {comentario.respuestas?.length > 0 && (
+                        <div style={{ marginLeft: 12, marginTop: 8 }}>
+                          {comentario.respuestas.map((resp) => (
+                            <div
+                              key={resp._id}
+                              style={{
+                                padding: 6,
+                                borderLeft: '2px solid #f4f4f4',
+                                marginBottom: 6,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <strong>
+                                  {resp.usuarioId?.nombre || 'Anónimo'}
+                                </strong>
+
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    gap: 8,
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <button
+                                    onClick={() =>
+                                      votarRespuesta(r._id, resp._id, 1)
+                                    }
+                                    title="Me gusta"
+                                  >
+                                    👍
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      votarRespuesta(r._id, resp._id, -1)
+                                    }
+                                    title="No me gusta"
+                                  >
+                                    👎
+                                  </button>
+                                </div>
+                              </div>
+
+                              <p style={{ marginTop: 4 }}>{resp.texto}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </details>
+        </div>
+      ))}
+
+      {reseniaSeleccionada && (
+        <Respuesta
+          reseña={reseniaSeleccionada}
+          onClose={() => setReseniaSeleccionada(null)}
+          onEnviar={handleEnviarRespuesta}
+        />
+      )}
     </div>
   )
 }

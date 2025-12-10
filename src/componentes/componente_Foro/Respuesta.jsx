@@ -9,11 +9,16 @@ function Respuesta({ reseña, onClose, onSubmit }) {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
+  }, [onClose])
 
   const handleSubmit = () => {
-    if (texto.trim() === '') return alert('La respuesta no puede estar vacía.')
-    onSubmit(reseña._id, texto)
+    if (texto.trim() === '') {
+      alert('La respuesta no puede estar vacía.')
+      return
+    }
+
+    // Ahora solo enviamos el texto. El padre decide qué hacer.
+    onSubmit(texto)
     setTexto('')
   }
 
@@ -24,9 +29,9 @@ function Respuesta({ reseña, onClose, onSubmit }) {
     }
   }
 
-  const nombreAutor = reseña.nombreUsuario || 'el autor'
-  const nombreJuego =
-    reseña.juegoId?.titulo || reseña.titulo || 'la publicación'
+  const nombreAutor = reseña?.usuarioId?.nombre || 'el autor'
+  const nombreJuego = reseña?.juegoId?.titulo || 'el juego'
+
 
   return (
     <div className="respuesta-modal-overlay">
@@ -39,7 +44,7 @@ function Respuesta({ reseña, onClose, onSubmit }) {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder="Escribe tu respuesta"
+          placeholder="Escribe tu respuesta..."
           className="respuesta-modal-textarea"
         />
 

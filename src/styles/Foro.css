@@ -216,14 +216,15 @@
   outline: none;
 }
 
-/* -----------------RESEÑA------------------*/
+/* ---------------------------------------------
+   LISTA Y TARJETAS DE RESEÑAS
+--------------------------------------------- */
 .lista-reseñas-items {
   display: flex;
   flex-direction: column;
   gap: var(--gap-cards);
 }
 
-/* Item de Reseña  */
 .reseña-item {
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-outline);
@@ -237,28 +238,29 @@
   box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
 }
 
-/*---------------DETAILS----------------------*/
+/* ---------------------------------------------
+   DETAILS (RESEÑA EXPANDIBLE)
+--------------------------------------------- */
 .reseña-details {
   width: 100%;
   border-left: 5px solid var(--color-text-primary);
   border-bottom: 0.8px solid var(--color-text-primary);
 }
 
-.reseña-info {
-  text-align: start;
-}
-
-/* Summary */
+/* ---------------------------------------------
+   SUMMARY
+--------------------------------------------- */
 .reseña-summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: var(--padding-card);
   cursor: pointer;
   background-color: var(--color-bg-secondary);
   border-radius: var(--radius-lg);
-  border-bottom: 1px solid transparent;
   transition: background-color 0.3s;
+  border-bottom: 1px solid transparent;
 }
 
 .reseña-details[open] .reseña-summary {
@@ -267,62 +269,43 @@
   border-radius: 0;
 }
 
-/* Indicador expancion */
+/* Flecha */
 .reseña-summary::before {
   content: '►';
   color: var(--color-text-primary);
-  margin-right: 15px;
+  margin-right: 10px;
   font-size: 1rem;
   transition: var(--transition-medium);
 }
 
 .reseña-details[open] .reseña-summary::before {
-  content: '►';
   transform: rotate(90deg);
-  transition: var(--transition-medium);
 }
 
-.reseña-summary-info {
+/* Usuario + Grimorios alineados */
+.reseña-info {
   display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-grow: 1;
+  flex-direction: column;
+  text-align: start;
 }
 
-.reseña-imagenPortada {
-  width: 80px;
-  height: 80px;
-  object-fit: fill;
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-small);
+.grimorios-puntuacion {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
 }
 
-.reseña-titulo {
-  font-family: var(--font-title);
-  color: var(--color-text-secondary);
-  font-size: 1.2rem;
-  display: block;
+.grimorio {
+  width: 26px;
 }
 
-.reseña-usuario {
-  font-size: var(--font-main);
-  color: var(--color-text-tertiary);
-  margin-top: 5px;
-}
-
-.reseña-recomendaria {
-  font-size: var(--font-main);
-  margin-top: 5px;
-  color: var(--color-text-primary);
-}
-
-/* Botón Responder */
-.btn-responder {
+/* Botón Responder + botones voto */
+.btn-responder,
+.btn-votar {
   cursor: pointer;
-  padding: 8px 15px;
+  padding: 8px 12px;
   font-family: var(--font-title);
   font-size: 0.9rem;
-  text-transform: uppercase;
   border-radius: var(--radius-md);
   background: var(--color-outline);
   color: var(--color-text-secondary);
@@ -330,62 +313,113 @@
   transition: var(--transition-fast);
 }
 
-.btn-responder:hover {
+.btn-responder:hover,
+.btn-votar:hover {
   background: var(--color-text-primary);
   color: var(--color-bg-accent);
 }
 
-/* Contenido Expandido */
+/* Conteo de votos */
+.votos-count {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  font-weight: bold;
+}
+
+/* ---------------------------------------------
+   CONTENIDO EXPANDIDO DE LA RESEÑA
+--------------------------------------------- */
 .reseña-contenido {
-  padding: 10px;
+  padding: 15px;
   border-top: 1px solid var(--color-outline);
+}
+
+.info-reseña p {
+  margin: 4px 0;
+  color: var(--color-text-primary);
 }
 
 .reseña-texto {
   font-style: italic;
-  text-align: start;
   color: var(--color-text-tertiary);
-  border-bottom: 2px dashed var(--color-outline);
-  margin: 15px;
+  border-left: 3px solid var(--color-outline);
+  padding-left: 12px;
+  margin: 10px 0 20px 0;
 }
 
-.datos-reseña {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--color-text-tertiary);
+/* ---------------------------------------------
+   FORMULARIO DE COMENTARIOS
+--------------------------------------------- */
+.reseña-contenido textarea {
+  width: 100%;
+  padding: 10px;
+  min-height: 70px;
+  resize: vertical;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-outline);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
 }
 
-/* ------------------- RESPUESTA--------------------- */
+.reseña-contenido textarea:focus {
+  border-color: var(--color-border);
+  outline: none;
+}
+
+.reseña-contenido button {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  transition: var(--transition-fast);
+}
+
+.reseña-contenido button:hover {
+  background-color: var(--color-text-primary);
+  color: var(--color-bg-accent);
+}
+
+/* ---------------------------------------------
+   BLOQUES DE COMENTARIOS Y RESPUESTAS
+--------------------------------------------- */
 .reseña-respuestas {
-  margin-top: 20px;
-  margin-left: var(--gap-lg);
-  text-align: start;
-  padding: 30px;
+  margin-top: 18px;
+  padding: 18px;
   background-color: var(--color-bg-alt);
   border-radius: var(--radius-md);
   border: 1px dashed var(--color-outline);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: start;
 }
 
-.respuesta-item {
-  font-size: var(--font-size-body);
-  margin-bottom: 5px;
-  padding-left: 10px;
+/* COMENTARIO */
+.comentario-item {
+  padding: 8px;
   border-left: 3px solid var(--color-outline);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
 }
 
-.respuesta-item strong {
-  color: var(--color-text-primary);
-  margin-right: 5px;
+/* RESPUESTA ANIDADA */
+.comentario-item .respuesta {
+  margin-left: 20px;
+  margin-top: 8px;
+  padding: 8px;
+  border-left: 3px solid var(--color-text-tertiary);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-sm);
 }
 
-/* Modal */
+/* ---------------------------------------------
+   MODAL RESPUESTA
+--------------------------------------------- */
 .respuesta-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
@@ -395,7 +429,6 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Contenido de la Ventana  */
 .respuesta-modal-content {
   background-color: var(--color-bg-secondary);
   border: var(--border-width-thick) solid var(--color-border);
@@ -407,29 +440,25 @@
   animation: fadeInScale 0.4s forwards;
 }
 
-/* Título */
 .respuesta-modal-content h2 {
   font-family: var(--font-title);
   color: var(--color-text-primary);
-  font-size: 1.8rem;
-  margin-bottom: 20px;
+  font-size: 1.6rem;
   border-bottom: 1px solid var(--color-outline);
-  padding-bottom: 10px;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
 }
 
-/* Área de Texto */
+/* Textarea del modal */
 .respuesta-modal-textarea {
   width: 100%;
-  min-height: 100px;
   padding: 10px;
-  margin-bottom: 20px;
+  min-height: 100px;
   background-color: var(--color-bg);
-  color: var(--color-text-secundary);
+  color: var(--color-text-secondary);
   border: 1px solid var(--color-outline);
   border-radius: var(--radius-md);
-  font-family: var(--font-main);
   resize: vertical;
-  transition: border-color var(--transition-fast);
 }
 
 .respuesta-modal-textarea:focus {
@@ -437,46 +466,42 @@
   outline: none;
 }
 
-/* ----------------- BOTONES ------------------ */
+/* Botones modal */
 .respuesta-modal-acciones {
   display: flex;
   justify-content: flex-end;
   gap: var(--gap-lg);
 }
 
-/* Estilo Base */
 .respuesta-modal-acciones button {
   cursor: pointer;
   padding: 10px 20px;
   font-family: var(--font-title);
   font-size: var(--font-size-navbar);
-  color: var(--color-text-tertiary);
   text-transform: uppercase;
   border-radius: var(--radius-md);
   transition: var(--transition-fast);
   background: var(--color-bg-secondary);
   border: var(--border-width-normal) solid var(--color-border);
+  color: var(--color-text-tertiary);
 }
 
-/* Botón CANCELAR */
-.btn-cancelar:hover {
-  color: var(--color-text-hover);
-  background: var(--color-bg-refused);
+.respuesta-modal-acciones button:hover {
   transform: translateY(-2px);
 }
 
-/*  Botón ENVIAR  */
-.btn-enviar:hover {
+.respuesta-modal-acciones button:nth-child(1):hover {
+  background: var(--color-bg-refused);
+  color: var(--color-text-hover);
+}
+
+.respuesta-modal-acciones button:nth-child(2):hover {
   background: var(--color-bg-accept);
   color: var(--color-text-hover);
-  transform: translateY(-2px);
 }
 
 
-/* =============================== */
-/*      FORMULARIO GENERAL         */
-/* =============================== */
-
+/*-----------------------------FORMULARIO GENERAL--------------------------- */
 .form-resenia-general {
   background-color: var(--color-bg-secondary);
   border: var(--border-width-normal) solid var(--color-border);
