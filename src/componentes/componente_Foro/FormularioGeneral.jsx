@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { authFetch } from '../../helpers/authFetch'
 
-function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
+function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
   const [titulo, setTitulo] = useState('')
   const [contenido, setContenido] = useState('')
   const [mensaje, setMensaje] = useState('')
@@ -12,7 +12,6 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Validaciones
     if (titulo.trim().length < 3) {
       setMensaje('El título debe tener al menos 3 caracteres.')
       return
@@ -23,7 +22,6 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
       return
     }
 
-    // Verificar si hay token (usuario logueado)
     const token = localStorage.getItem('token')
     if (!token) {
       setMensaje('Debes iniciar sesión para publicar.')
@@ -45,14 +43,13 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
       })
 
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error || 'Error al publicar')
 
-      setMensaje('Publicado correctamente')
       setTitulo('')
       setContenido('')
 
       if (onPublicacionCreada) onPublicacionCreada(data)
+      if (onClose) onClose()
     } catch (err) {
       setMensaje(err.message)
     } finally {
@@ -61,36 +58,49 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada }) {
   }
 
   return (
-    <div className="form-resenia-general popup">
-      <h3>Crear {tipo}</h3>
+    <div className="overlay-general">
+      <div className="form-resenia-general">
+        <h3>Crear {tipo}</h3>
 
-      {mensaje && <p className="mensaje">{mensaje}</p>}
+        {mensaje && <p className="mensaje">{mensaje}</p>}
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Título:
-          <input
-            type="text"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Escribe un título"
-          />
-        </label>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Título
+            <input
+              type="text"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              placeholder="Escribe un título"
+            />
+          </label>
 
-        <label>
-          Contenido:
-          <textarea
-            rows={4}
-            value={contenido}
-            onChange={(e) => setContenido(e.target.value)}
-            placeholder="Escribe aquí..."
-          ></textarea>
-        </label>
+          <label>
+            Contenido
+            <textarea
+              rows={4}
+              value={contenido}
+              onChange={(e) => setContenido(e.target.value)}
+              placeholder="Escribe aquí..."
+            />
+          </label>
 
-        <button type="submit" disabled={cargando}>
-          {cargando ? 'Publicando...' : 'Publicar'}
-        </button>
-      </form>
+          <div className="form-resenia-acciones">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={cargando}
+              className="btn-cancelar"
+            >
+              Cancelar
+            </button>
+
+            <button type="submit" disabled={cargando}>
+              {cargando ? 'Publicando...' : 'Publicar'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

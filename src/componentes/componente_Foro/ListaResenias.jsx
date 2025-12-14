@@ -1,126 +1,173 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState, useCallback } from 'react'
+import { authFetch } from '../../helpers/authFetch'
+import '../../styles/Foro.css'
 import Loader from '../componente_General/Loading'
 import Respuesta from './Respuesta'
 import FormularioReseniaGeneral from './FormularioGeneral'
 import tiempoCarga3 from '../../assets/loadingGif/tiempoCarga3.gif'
+import iconGrimorio from '../../assets/Icons/iconGrimorio.png'
+import iconGrimorioVacio from '../../assets/Icons/iconGrimorioVacio.png'
+
+const API_URL = import.meta.env.VITE_API_URL
 
 function ListaResenias() {
+  // =========================
+  // ESTADO
+  // =========================
   const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState('')
   const [vista, setVista] = useState('juegos')
-  const [loading, setLoading] = useState(true)
-  const [selectedItem, setSelectedItem] = useState(null)
-  const [showModal, setShowModal] = useState(false)
+
+  const [comentariosTexto, setComentariosTexto] = useState({})
+  const [formComentarioAbierto, setFormComentarioAbierto] = useState(null)
+  const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
 
   const [showFormGeneral, setShowFormGeneral] = useState(false)
   const [tipoNuevaPublicacion, setTipoNuevaPublicacion] = useState('general')
 
-  const navigate = useNavigate()
-  const API_URL = import.meta.env.VITE_API_URL
-
-  // Cargar reseñas + publicaciones
-  const cargarTodo = () => {
-    setLoading(true)
-    const timeout = setTimeout(() => setLoading(false), 7000)
-
-    Promise.all([
-      fetch(`${API_URL}/api/reviews`).then((res) => res.json()),
-      fetch(`${API_URL}/api/comunidad`).then((res) => res.json()),
-    ])
-      .then(([reviews, publicaciones]) => {
-        const reviewsFormateadas = reviews.map((r) => ({
-          ...r,
-          tipo: 'review',
-        }))
-
-        const publicacionesFormateadas = publicaciones.map((p) => ({
-          ...p,
-          tipo: 'publicacion',
-        }))
-
-        setItems([...reviewsFormateadas, ...publicacionesFormateadas])
-        setLoading(false)
-      })
-      .catch((err) => {
-        console.error('Error cargando datos:', err)
-        setLoading(false)
-      })
-      .finally(() => clearTimeout(timeout))
+  // =========================
+  // HELPERS
+  // =========================
+  const getUserId = () => {
+    const stored = localStorage.getItem('user')
+    if (!stored) return null
+    const user = JSON.parse(stored)
+    return user._id || user.id
   }
+
+  const requireLogin = () => window.dispatchEvent(new Event('openLoginModal'))
+
+  const actualizarItem = (actualizado) => {
+    setItems((prev) =>
+      prev.map((i) => (i._id === actualizado._id ? actualizado : i))
+    )
+  }
+
+  // =========================
+  // CARGA DE DATOS
+  // =========================
+  const cargarTodo = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [reviewsRes, comunidadRes] = await Promise.all([
+        fetch(`${API_URL}/api/reviews`),
+        fetch(`${API_URL}/api/comunidad`),
+      ])
+
+      const reviews = await reviewsRes.json()
+      const publicaciones = await comunidadRes.json()
+
+      setItems([
+        ...(Array.isArray(reviews)
+          ? reviews.map((r) => ({ ...r, tipo: 'review' }))
+          : []),
+        ...(Array.isArray(publicaciones)
+          ? publicaciones.map((p) => ({ ...p, tipo: 'publicacion' }))
+          : []),
+      ])
+    } catch (err) {
+      console.error('Error cargando datos:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     cargarTodo()
-  }, [])
+  }, [cargarTodo])
 
-  const verPerfil = (id) => {
-    navigate(`/perfil/${id}`)
-  }
+  // =========================
+  // ACCIONES
+  // =========================
+  const crearComentario = async (reviewId) => {
+    const texto = comentariosTexto[reviewId]
+    if (!texto?.trim()) return
 
-  const abrirModal = (item) => {
-    setSelectedItem(item)
-    setShowModal(true)
-  }
-
-  const enviarRespuesta = async (id, respuesta) => {
-    const storedUser = localStorage.getItem('user')
-    if (!storedUser) {
-      window.dispatchEvent(new Event('openLoginModal'))
-      return
-    }
-
-    const user = JSON.parse(storedUser)
-    const userId = user._id || user.id
-
-    const endpoint =
-      selectedItem.tipo === 'review'
-        ? `${API_URL}/api/reviews/${id}/responder`
-        : `${API_URL}/api/publicaciones/${id}/comentar`
+    const userId = getUserId()
+    if (!userId) return requireLogin()
 
     try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ respuesta, usuarioId: userId }),
-      })
+      const res = await authFetch(
+        `${API_URL}/api/reviews/${reviewId}/comentarios`,
+        { method: 'POST', body: JSON.stringify({ usuarioId: userId, texto }) }
+      )
 
-      const data = await res.json()
-
-      if (res.ok) {
-        setItems((prev) => prev.map((r) => (r._id === id ? data : r)))
-      } else {
-        alert(`Error: ${data.error}`)
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setShowModal(false)
+      if (!res.ok) throw new Error()
+      actualizarItem(await res.json())
+      setComentariosTexto((s) => ({ ...s, [reviewId]: '' }))
+      setFormComentarioAbierto(null)
+    } catch {
+      alert('Error al comentar')
     }
   }
 
-  // Filtro por texto + tipo
-  const itemsFiltrados = items.filter((r) => {
-    const coincideFiltro =
-      r.nombreUsuario?.toLowerCase().includes(filtro.toLowerCase()) ||
-      r.textoResenia?.toLowerCase().includes(filtro.toLowerCase()) ||
-      r.contenido?.toLowerCase().includes(filtro.toLowerCase()) ||
-      r.asunto?.toLowerCase().includes(filtro.toLowerCase()) ||
-      r.juegoId?.titulo?.toLowerCase().includes(filtro.toLowerCase())
+  const votarReview = async (id, voto) => {
+    const userId = getUserId()
+    if (!userId) return requireLogin()
 
-    if (!coincideFiltro) return false
+    try {
+      const res = await authFetch(`${API_URL}/api/reviews/votar/${id}`, {
+        method: 'POST',
+        body: JSON.stringify({ usuarioId: userId, voto }),
+      })
 
-    switch (vista) {
-      case 'juegos':
-        return r.tipo === 'review'
-      case 'generales':
-        return r.tipo === 'publicacion' && r.tag === 'general'
-      case 'fanart':
-        return r.tipo === 'publicacion' && r.tag === 'fanart'
-      case 'noticias':
-        return r.tipo === 'publicacion' && r.tag === 'noticia'
-      default:
-        return true
+      if (!res.ok) throw new Error()
+      actualizarItem(await res.json())
+    } catch {
+      alert('Error al votar')
     }
+  }
+
+  const votarRespuesta = async (reviewId, respuestaId, voto) => {
+    const userId = getUserId()
+    if (!userId) return requireLogin()
+
+    try {
+      const res = await authFetch(
+        `${API_URL}/api/reviews/${reviewId}/respuesta/${respuestaId}/votar`,
+        { method: 'POST', body: JSON.stringify({ usuarioId: userId, voto }) }
+      )
+
+      if (!res.ok) throw new Error()
+      actualizarItem(await res.json())
+    } catch {
+      alert('Error al votar respuesta')
+    }
+  }
+
+  const enviarRespuesta = async (reviewId, comentarioId, texto) => {
+    if (!texto.trim()) return
+
+    const userId = getUserId()
+    if (!userId) return requireLogin()
+
+    try {
+      const res = await authFetch(
+        `${API_URL}/api/reviews/${reviewId}/comentarios/${comentarioId}/responder`,
+        { method: 'POST', body: JSON.stringify({ usuarioId: userId, texto }) }
+      )
+
+      if (!res.ok) throw new Error()
+      actualizarItem(await res.json())
+      setReseniaSeleccionada(null)
+    } catch {
+      alert('Error al responder')
+    }
+  }
+
+  // FILTRADO
+  const itemsFiltrados = items.filter((r) => {
+    const texto =
+      r.textoResenia || r.contenido || r.asunto || r.juegoId?.titulo || ''
+    if (!texto.toLowerCase().includes(filtro.toLowerCase())) return false
+    if (vista === 'juegos') return r.tipo === 'review'
+    if (vista === 'general') return r.tag === 'general'
+    if (vista === 'discusion') return r.tag === 'discusion'
+    if (vista === 'pregunta') return r.tag === 'pregunta'
+    if (vista === 'fanart') return r.tag === 'fanart'
+    if (vista === 'bug/errores') return r.tag === 'bug/errores'
+    return true
   })
 
   if (loading) return <Loader imagen={tiempoCarga3} />
@@ -128,13 +175,10 @@ function ListaResenias() {
   return (
     <div className="lista-reseñas-container">
       <header className="lista-reseñas-header">
-        <h1 className="lista-reseñas-titulo">Comunidad</h1>
-        <p className="lista-reseñas-subtitulo">
-          Explora publicaciones y participa en la comunidad
-        </p>
+        <h1>Comunidad</h1>
+        <p>Explora publicaciones y reseñas</p>
       </header>
 
-      {/* Botón Crear */}
       <button
         className="btn-crear-publicacion"
         onClick={() => {
@@ -142,152 +186,254 @@ function ListaResenias() {
           setShowFormGeneral(true)
         }}
       >
-        ➕ Crear{' '}
-        {vista === 'juegos'
-          ? 'reseña de juego'
-          : vista === 'generales'
-          ? 'reseña general'
-          : vista}
+        ❌ Crear
       </button>
 
-      {/* Selector de vistas */}
       <div className="vista-selector">
-        <button
-          className={vista === 'juegos' ? 'vista-btn active' : 'vista-btn'}
-          onClick={() => setVista('juegos')}
-        >
-          🎮 Reseñas de juegos
-        </button>
-
-        <button
-          className={vista === 'generales' ? 'vista-btn active' : 'vista-btn'}
-          onClick={() => setVista('generales')}
-        >
-          📝 Reseñas generales
-        </button>
-
-        <button
-          className={vista === 'fanart' ? 'vista-btn active' : 'vista-btn'}
-          onClick={() => setVista('fanart')}
-        >
-          🖼️ Fanarts
-        </button>
-
-        <button
-          className={vista === 'noticias' ? 'vista-btn active' : 'vista-btn'}
-          onClick={() => setVista('noticias')}
-        >
-          📰 Noticias
-        </button>
+        {[
+          'juegos',
+          'general',
+          'discusion',
+          'pregunta',
+          'fanart',
+          'bug/errores',
+        ].map((v) => (
+          <button
+            key={v}
+            className={vista === v ? 'vista-btn active' : 'vista-btn'}
+            onClick={() => setVista(v)}
+          >
+            {v}
+          </button>
+        ))}
       </div>
 
-      {/* Filtro */}
-      <div className="lista-reseñas-filtro">
-        <input
-          type="text"
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
-          placeholder="Buscar por texto, usuario o juego..."
-          className="input-filtro"
-        />
-      </div>
+      <input
+        className="input-filtro"
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)}
+        placeholder="Buscar..."
+      />
 
-      {/* LISTADO */}
-      {itemsFiltrados.length > 0 ? (
-        <div className="lista-reseñas-items">
-          {itemsFiltrados.map((r) => (
-            <div key={r._id} className="reseña-item">
-              <details className="reseña-details">
-                <summary className="reseña-summary">
-                  <div className="reseña-summary-info">
-                    {r.tipo === 'review' && r.juegoId?.imagenPortada && (
-                      <img
-                        src={r.juegoId.imagenPortada}
-                        alt={r.juegoId.titulo}
-                        className="reseña-imagenPortada"
-                      />
+      <div className="lista-reseñas-items">
+        {itemsFiltrados.map((r) => (
+          <div key={r._id} className="reseña-item">
+            <details className="reseña-details">
+              <summary className="reseña-summary">
+                <div className="reseña-info">
+                  {r.tipo === 'review' && r.juegoId?.imagenPortada && (
+                    <img
+                      src={r.juegoId.imagenPortada}
+                      alt={r.juegoId.titulo}
+                      className="reseña-img"
+                    />
+                  )}
+
+                  <div className="reseña-textos">
+                    <strong>
+                      {r.tipo === 'review'
+                        ? r.juegoId?.titulo
+                        : r.asunto || r.tag?.toUpperCase()}
+                    </strong>
+                    <span>{r.usuarioId?.nombre || 'Anónimo'}</span>
+
+                    {r.tipo === 'review' && (
+                      <div className="grimorios-puntuacion">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <img
+                            key={n}
+                            src={
+                              n <= r.puntuacion
+                                ? iconGrimorio
+                                : iconGrimorioVacio
+                            }
+                            className="grimorio"
+                            alt="puntuación"
+                          />
+                        ))}
+                      </div>
                     )}
-
-                    <div className="reseña-info">
-                      <strong className="reseña-titulo">
-                        {r.tipo === 'review'
-                          ? r.juegoId?.titulo
-                          : r.asunto || r.tag?.toUpperCase()}
-                      </strong>
-
-                      <button
-                        onDoubleClick={() =>
-                          verPerfil(r.usuarioId?._id || r.usuarioId)
-                        }
-                        className="btn-amigo"
-                      >
-                        <p className="reseña-usuario">Por: {r.nombreUsuario}</p>
-                      </button>
-                    </div>
                   </div>
-
-                  <button
-                    className="btn-responder"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      abrirModal(r)
-                    }}
-                  >
-                    Responder
-                  </button>
-                </summary>
-
-                <div className="reseña-contenido">
-                  {r.tipo === 'review' && (
-                    <div className="datos-reseña">
-                      <p>Horas jugadas: {r.horasJugadas}</p>
-                      <p>Recomendado: {r.recomendaria ? 'Sí' : 'No'}</p>
-                    </div>
-                  )}
-
-                  <p className="reseña-texto">
-                    {r.textoResenia || r.contenido}
-                  </p>
-
-                  {r.comentarios && r.comentarios.length > 0 && (
-                    <div className="reseña-respuestas">
-                      {r.comentarios.map((c) => (
-                        <div key={c._id} className="respuesta-item">
-                          <strong>{c.nombreUsuario}</strong>: {c.texto}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              </details>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p>No hay publicaciones disponibles.</p>
-      )}
 
-      {/* Modal Respuestas */}
-      {showModal && selectedItem && (
+                {r.tipo === 'review' && (
+                  <div className="reseña-votos">
+                    <button
+                      className="btn-votar"
+                      onClick={() => votarReview(r._id, 1)}
+                    >
+                      👍
+                    </button>
+                    <button
+                      className="btn-votar"
+                      onClick={() => votarReview(r._id, -1)}
+                    >
+                      👎
+                    </button>
+                    <span>{r.votos?.reduce((s, v) => s + v.voto, 0) || 0}</span>
+                  </div>
+                )}
+              </summary>
+
+              <div className="reseña-contenido">
+                {r.tipo === 'review' && (
+                  <div className="info-reseña">
+                    <p>Asunto: {r.asunto || 'No especificado'}</p>
+                    <p className="hr-jugadas">
+                      Horas jugadas: {r.horasJugadas}
+                    </p>
+                  </div>
+                )}
+
+                <p className="reseña-texto">{r.textoResenia || r.contenido}</p>
+
+                <button
+                  className="btn-comentar"
+                  onClick={() => setFormComentarioAbierto(r._id)}
+                >
+                  Añadir comentario
+                </button>
+
+                {formComentarioAbierto === r._id && (
+                  <div className="form-comentario">
+                    <textarea
+                      value={comentariosTexto[r._id] || ''}
+                      onChange={(e) =>
+                        setComentariosTexto((s) => ({
+                          ...s,
+                          [r._id]: e.target.value,
+                        }))
+                      }
+                      placeholder="Escribe un comentario..."
+                    />
+                    <button onClick={() => crearComentario(r._id)}>
+                      Comentar
+                    </button>
+                  </div>
+                )}
+
+                {r.comentarios?.length > 0 && (
+                  <div className="reseña-respuestas" style={{ marginTop: 12 }}>
+                    {r.comentarios.map((comentario) => (
+                      <div
+                        key={comentario._id}
+                        className="comentario-item"
+                        style={{
+                          padding: 8,
+                          borderLeft: '2px solid #eee',
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <strong>
+                            {comentario.usuarioId?.nombre || 'Anónimo'}
+                          </strong>
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: 8,
+                              alignItems: 'center',
+                            }}
+                          >
+                            <button
+                              onClick={() =>
+                                setReseniaSeleccionada({
+                                  ...r,
+                                  comentarioId: comentario._id,
+                                })
+                              }
+                            >
+                              Responder
+                            </button>
+                          </div>
+                        </div>
+
+                        <p style={{ marginTop: 6 }}>{comentario.texto}</p>
+
+                        {comentario.respuestas?.length > 0 && (
+                          <div style={{ marginLeft: 12, marginTop: 8 }}>
+                            {comentario.respuestas.map((resp) => (
+                              <div
+                                key={resp._id}
+                                style={{
+                                  padding: 6,
+                                  borderLeft: '2px solid #f4f4f4',
+                                  marginBottom: 6,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <strong>
+                                    {resp.usuarioId?.nombre || 'Anónimo'}
+                                  </strong>
+
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      gap: 8,
+                                      alignItems: 'center',
+                                    }}
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        votarRespuesta(r._id, resp._id, 1)
+                                      }
+                                      title="Me gusta"
+                                    >
+                                      👍
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        votarRespuesta(r._id, resp._id, -1)
+                                      }
+                                      title="No me gusta"
+                                    >
+                                      👎
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <p style={{ marginTop: 4 }}>{resp.texto}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </details>
+          </div>
+        ))}
+      </div>
+
+      {reseniaSeleccionada && (
         <Respuesta
-          reseña={selectedItem}
-          onClose={() => setShowModal(false)}
-          onSubmit={enviarRespuesta}
+          reseña={reseniaSeleccionada}
+          onClose={() => setReseniaSeleccionada(null)}
+          onEnviar={enviarRespuesta}
         />
       )}
 
-      {/* Modal Crear Publicación */}
       {showFormGeneral && (
-        <div className="overlay-general">
-          <FormularioReseniaGeneral
-            tipo={tipoNuevaPublicacion}
-            onClose={() => setShowFormGeneral(false)}
-            onCreated={() => {
-              setShowFormGeneral(false)
-              cargarTodo()
-            }}
-          />
-        </div>
+        <FormularioReseniaGeneral
+          tipo={tipoNuevaPublicacion}
+          onPublicacionCreada={cargarTodo}
+          onClose={() => setShowFormGeneral(false)}
+        />
       )}
     </div>
   )

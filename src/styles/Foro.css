@@ -63,6 +63,7 @@
   width: 28px;
   height: 28px;
 }
+
 .icon-plus:hover {
   transform: scale(1.1) translateX(-5px);
 }
@@ -202,13 +203,14 @@
 
 .input-filtro {
   width: 100%;
-  padding: 12px 15px;
+  padding: 15px 15px;
   background-color: var(--color-bg-main);
   color: var(--color-text-primary);
   border: 2px solid var(--color-outline);
   border-radius: var(--radius-md);
   font-family: var(--font-main);
   font-size: var(--font-size-body);
+  margin-bottom: 15px;
 }
 
 .input-filtro:focus {
@@ -282,21 +284,33 @@
   transform: rotate(90deg);
 }
 
-/* Usuario + Grimorios alineados */
+/*----------------------REVIEW------------------------*/
 .reseña-info {
   display: flex;
+  flex-direction: row;
+}
+
+.reseña-textos {
+  display: flex;
   flex-direction: column;
-  text-align: start;
 }
 
 .grimorios-puntuacion {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
 }
 
 .grimorio {
-  width: 26px;
+  width: 50px;
+}
+
+.reseña-img {
+  width: 70px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 /* Botón Responder + botones voto */
@@ -326,9 +340,7 @@
   font-weight: bold;
 }
 
-/* ---------------------------------------------
-   CONTENIDO EXPANDIDO DE LA RESEÑA
---------------------------------------------- */
+/* Info */
 .reseña-contenido {
   padding: 15px;
   border-top: 1px solid var(--color-outline);
@@ -347,9 +359,7 @@
   margin: 10px 0 20px 0;
 }
 
-/* ---------------------------------------------
-   FORMULARIO DE COMENTARIOS
---------------------------------------------- */
+/* Comentarios */
 .reseña-contenido textarea {
   width: 100%;
   padding: 10px;
@@ -381,9 +391,6 @@
   color: var(--color-bg-accent);
 }
 
-/* ---------------------------------------------
-   BLOQUES DE COMENTARIOS Y RESPUESTAS
---------------------------------------------- */
 .reseña-respuestas {
   margin-top: 18px;
   padding: 18px;
@@ -396,7 +403,6 @@
   text-align: start;
 }
 
-/* COMENTARIO */
 .comentario-item {
   padding: 8px;
   border-left: 3px solid var(--color-outline);
@@ -404,7 +410,6 @@
   border-radius: var(--radius-sm);
 }
 
-/* RESPUESTA ANIDADA */
 .comentario-item .respuesta {
   margin-left: 20px;
   margin-top: 8px;
@@ -413,10 +418,80 @@
   background-color: var(--color-bg);
   border-radius: var(--radius-sm);
 }
+/*-------------------------COMUNIDAD--------------------------*/
+.btn-crear-publicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: var(--padding-button);
+  margin-bottom: 25px;
+  background: linear-gradient(
+    145deg,
+    var(--color-bg-secondary),
+    var(--color-bg-alt)
+  );
+  color: var(--color-text-primary);
+  font-family: var(--font-title);
+  font-size: var(--font-size-card);
+  letter-spacing: 1px;
+  border: var(--border-width-normal) solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
 
-/* ---------------------------------------------
-   MODAL RESPUESTA
---------------------------------------------- */
+.btn-crear-publicacion:hover {
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.btn-crear-publicacion:active {
+  transform: scale(0.97);
+}
+
+.vista-selector {
+  height: 2em;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.vista-btn {
+  padding: 6px 16px;
+  background-color: var(--color-bg-alt);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-main);
+  font-size: var(--font-size-body);
+  letter-spacing: 0.5px;
+  border: var(--border-width-normal) solid var(--color-outline);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.vista-btn:hover {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+  box-shadow: var(--text-shadow-hover);
+}
+
+.vista-btn.active {
+  background: linear-gradient(
+    145deg,
+    var(--color-bg-secondary),
+    var(--color-bg-main)
+  );
+
+  color: var(--color-text-primary);
+  font-weight: 600;
+
+  border-color: var(--color-border);
+  box-shadow: var(--box-shadow-card);
+}
+
+/* ---------------- MODAL RESPUESTA ------------------- */
 .respuesta-modal-overlay {
   position: fixed;
   inset: 0;
@@ -424,7 +499,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 900;
+  z-index: 1000;
   backdrop-filter: blur(3px);
   animation: fadeIn 0.3s ease-out;
 }
@@ -471,6 +546,7 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--gap-lg);
+  margin-top: 5px;
 }
 
 .respuesta-modal-acciones button {
@@ -500,8 +576,19 @@
   color: var(--color-text-hover);
 }
 
+/*-----------------------------FORMULARIO COMUNIDAD--------------------------- */
+.overlay-general {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
 
-/*-----------------------------FORMULARIO GENERAL--------------------------- */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1000;
+}
+
 .form-resenia-general {
   background-color: var(--color-bg-secondary);
   border: var(--border-width-normal) solid var(--color-border);
@@ -509,11 +596,12 @@
   padding: var(--padding-card);
   width: 90%;
   max-width: 500px;
-  text-align: start;
+
   color: var(--color-text-primary);
   animation: fadeInScale 0.35s ease-out;
   box-shadow: var(--shadow-soft);
 }
+
 
 /* TÍTULO */
 .form-resenia-general h3 {
@@ -572,44 +660,9 @@
   outline: none;
 }
 
-/* =============================== */
-/*            LIKE BUTTON          */
-/* =============================== */
-
-.votacion {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-md);
-}
-
-.votacion p {
-  margin: 0;
-  font-size: var(--font-size-body);
-  color: var(--color-text-secundary);
-}
-
-.votacion button {
-  padding: 8px 15px;
-  background: var(--color-bg-secondary);
-  border: var(--border-width-normal) solid var(--color-border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: var(--font-size-body);
-  transition: var(--transition-fast);
-  color: var(--color-text-tertiary);
-}
-
-.votacion button:hover {
-  background-color: var(--color-bg-accept);
-  color: var(--color-text-hover);
-  transform: translateY(-2px);
-}
-
-/* =============================== */
-/*      BOTÓN PRINCIPAL ENVIAR     */
-/* =============================== */
-
-.form-resenia-general button[type='submit'] {
+/* Boton enviar comunidad*/
+.form-resenia-general button[type='submit'],
+.btn-cancelar {
   width: 100%;
   padding: 12px;
   margin-top: 10px;
@@ -624,27 +677,24 @@
   transition: var(--transition-fast);
 }
 
-.form-resenia-general button[type='submit']:hover:not(:disabled) {
+.form-resenia-general button[type='submit']:hover:not(:disabled),
+.btn-cancelar:hover:not(:disabled) {
   background-color: var(--color-bg-accept);
   color: var(--color-text-hover);
   transform: translateY(-2px);
 }
 
-.form-resenia-general button[type='submit']:disabled {
+.form-resenia-general button[type='submit']:disabled,
+.btn-cancelar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.overlay-general {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.7);
+
+/* ACCIONES DEL FORMULARIO */
+.form-resenia-acciones,
+.btn-cancelar {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  gap: var(--gap-lg);
 }
 
 @media (max-width: 900px) {
