@@ -40,13 +40,20 @@ function ListaResenias() {
 
   const actualizarItem = (actualizado) => {
     setItems((prev) =>
-      prev.map((i) => (i._id === actualizado._id ? actualizado : i))
+      prev.map((i) =>
+        i._id === actualizado._id
+          ? {
+              ...actualizado,
+              tipo: i.tipo,
+              juegoId: i.juegoId, // ← CLAVE
+            }
+          : i
+      )
     )
   }
 
-  // =========================
+
   // CARGA DE DATOS
-  // =========================
   const cargarTodo = useCallback(async () => {
     setLoading(true)
     try {
@@ -77,9 +84,7 @@ function ListaResenias() {
     cargarTodo()
   }, [cargarTodo])
 
-  // =========================
   // ACCIONES
-  // =========================
   const crearComentario = async (reviewId) => {
     const texto = comentariosTexto[reviewId]
     if (!texto?.trim()) return

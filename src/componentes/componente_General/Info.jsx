@@ -22,6 +22,23 @@ import iconEliminar from '../../assets/Icons/iconEliminar.png'
 import iconCompletados from '../../assets/Icons/iconCompletados.png'
 import iconPorCompletar from '../../assets/Icons/iconPorCompletar.png'
 
+/* =====================================================
+   Helper CRÍTICO: preserva datos populados
+===================================================== */
+const mergeReseña = (prev, actualizada) => ({
+  ...actualizada,
+  usuarioId: prev.usuarioId,
+  comentarios: actualizada.comentarios?.map((c, i) => ({
+    ...c,
+    usuarioId: prev.comentarios?.[i]?.usuarioId || c.usuarioId,
+    respuestas: c.respuestas?.map((r, j) => ({
+      ...r,
+      usuarioId:
+        prev.comentarios?.[i]?.respuestas?.[j]?.usuarioId || r.usuarioId,
+    })),
+  })),
+})
+
 function InfoJuego({ setJuegos }) {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -32,95 +49,44 @@ function InfoJuego({ setJuegos }) {
   const [comentarioTextoPorReview, setComentarioTextoPorReview] = useState({})
   const [mostrarFormularioComentario, setMostrarFormularioComentario] =
     useState(null)
-  const API_URL = import.meta.env.VITE_API_URL
 
+  const API_URL = import.meta.env.VITE_API_URL
   const usuarioLS = JSON.parse(localStorage.getItem('user') || 'null')
   const [user, setUser] = useState(usuarioLS)
 
   const getUserId = () => user?._id || user?.id || null
   const getUserName = () => user?.nombre || user?.username || null
 
+  /* ================== CARGA INICIAL ================== */
   useEffect(() => {
     let cancelled = false
     const controller = new AbortController()
     setLoading(true)
 
-    const userId = getUserId()
-
     const cargarDatos = async () => {
       try {
-        const gameFetch = fetch(`${API_URL}/api/games/games/${id}`, {
-          signal: controller.signal,
-        })
-
-        const reviewsFetch = fetch(`${API_URL}/api/reviews/juego/${id}`, {
-          signal: controller.signal,
-        })
-
-        const relationFetch = userId
-          ? authFetch(`${API_URL}/api/dataUser/usuario/${userId}`, {
-              signal: controller.signal,
-            })
-          : Promise.resolve({
-              ok: false,
-              status: 204,
-              json: async () => [],
-            })
-
-        const [gameRes, relationRes, reviewsRes] = await Promise.all(
-          [gameFetch, relationFetch, reviewsFetch].map((p) =>
-            p.then((r) => r).catch((err) => ({ ok: false, error: err }))
-          )
-        )
+        const [gameRes, reviewsRes] = await Promise.all([
+          fetch(`${API_URL}/api/games/games/${id}`, {
+            signal: controller.signal,
+          }),
+          fetch(`${API_URL}/api/reviews/juego/${id}`, {
+            signal: controller.signal,
+          }),
+        ])
 
         if (cancelled) return
 
-        if (gameRes && gameRes.ok) {
-          const dataJuego = await gameRes.json()
-
-          let dataRelacion = []
-          if (relationRes && relationRes.ok) {
-            try {
-              dataRelacion = await relationRes.json()
-            } catch {
-              dataRelacion = []
-            }
-          }
-
-          const relacion = Array.isArray(dataRelacion)
-            ? dataRelacion.find((d) => {
-                const idJuego = d?.juegoId?._id ?? d?.juegoId
-                return idJuego === dataJuego._id
-              })
-            : null
-
-          const enriched = {
-            ...dataJuego,
-            misjuegos: relacion?.misjuegos || false,
-            wishlist: relacion?.wishlist || false,
-            completado: relacion?.completado || false,
-          }
-
-          setJuego(enriched)
-        } else {
-          console.error('Error obteniendo datos del juego', gameRes)
-          setJuego(null)
+        if (gameRes.ok) {
+          setJuego(await gameRes.json())
         }
 
-        if (reviewsRes && reviewsRes.ok) {
-          try {
-            const dataReseñas = await reviewsRes.json()
-            setReseñas(Array.isArray(dataReseñas) ? dataReseñas : [])
-          } catch {
-            setReseñas([])
-          }
-        } else {
-          console.error('Error cargando reseñas', reviewsRes)
-          setReseñas([])
+        if (reviewsRes.ok) {
+          const data = await reviewsRes.json()
+          setReseñas(Array.isArray(data) ? data : [])
         }
       } catch (err) {
         if (err.name !== 'AbortError') {
-          console.error('Error en InfoJuego (catch):', err)
+          console.error(err)
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -128,211 +94,113 @@ function InfoJuego({ setJuegos }) {
     }
 
     cargarDatos()
-
     return () => {
       cancelled = true
       controller.abort()
     }
-  }, [id, user ? user._id || user.id : null])
+  }, [id])
 
+  /* ================== AUTH EVENTS ================== */
   useEffect(() => {
     const manejarAuth = (e) => {
-      const logueado = e.detail?.logueado
-
-      if (logueado) {
-        const u = JSON.parse(localStorage.getItem('user') || 'null')
-        setUser(u)
-      } else {
-        setUser(null)
-      }
+      setUser(
+        e.detail?.logueado ? JSON.parse(localStorage.getItem('user')) : null
+      )
     }
-
     escucharEvento(eventoAuth.nombre, manejarAuth)
-
-    return () => {
-      dejarDeEscuchar(eventoAuth.nombre, manejarAuth)
-    }
+    return () => dejarDeEscuchar(eventoAuth.nombre, manejarAuth)
   }, [])
 
-  const actualizarEstado = async (juegoId, campo, valor) => {
-    try {
-      let userId = getUserId()
-
-      if (!userId) {
-        const saved = localStorage.getItem('user')
-        if (saved) {
-          const parsed = JSON.parse(saved)
-          userId = parsed._id || parsed.id
-        }
-      }
-
-      if (!userId) {
-        // ABRIR MODAL DE LOGIN
-        window.dispatchEvent(new Event('openLoginModal'))
-        return
-      }
-
-      const res = await authFetch(
-        `${API_URL}/api/dataUser/usuario/${userId}/juego/${juegoId}`,
-        {
-          method: 'PUT',
-          body: JSON.stringify({ [campo]: valor }),
-        }
-      )
-
-      if (!res.ok) {
-        console.error(await res.json().catch(() => {}))
-        return
-      }
-
-      setJuego((prev) => (prev ? { ...prev, [campo]: valor } : prev))
-
-      if (typeof setJuegos === 'function') {
-        setJuegos((prev) =>
-          Array.isArray(prev)
-            ? prev.map((j) =>
-                j._id === juegoId ? { ...j, [campo]: valor } : j
-              )
-            : prev
-        )
-      }
-    } catch (err) {
-      console.error('Error actualizando estado:', err)
-    }
-  }
-
-  const handleReseniaEnviada = (nueva) => {
-    setReseñas((prev) => [nueva, ...prev])
-  }
-
+  /* ================== COMENTARIOS ================== */
   const crearComentario = async (reviewId) => {
     const texto = (comentarioTextoPorReview[reviewId] || '').trim()
-    if (!texto) return alert('El comentario no puede estar vacío.')
-
-    const userId = getUserId()
-    if (!userId) {
-      window.dispatchEvent(new Event('openLoginModal'))
-      return
-    }
+    if (!texto) return
 
     try {
       const res = await authFetch(
         `${API_URL}/api/reviews/${reviewId}/comentarios`,
         {
           method: 'POST',
-          body: JSON.stringify({
-            usuarioId: userId,
-            texto,
-          }),
+          body: JSON.stringify({ texto, usuarioId: getUserId() }),
         }
       )
 
-      if (!res.ok) throw new Error('Error creando comentario')
-
       const actualizada = await res.json()
       setReseñas((prev) =>
-        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
+        prev.map((r) =>
+          r._id === actualizada._id ? mergeReseña(r, actualizada) : r
+        )
       )
-      setComentarioTextoPorReview((s) => ({ ...s, [reviewId]: '' }))
-      setMostrarFormularioComentario(null)
     } catch (err) {
-      console.error('Error creando comentario:', err)
-      alert('No se pudo crear el comentario.')
+      console.error(err)
     }
   }
 
+  /* ================== RESPUESTAS ================== */
   const handleEnviarRespuesta = async (reseñaId, comentarioId, texto) => {
-    if (!texto || !texto.trim())
-      return alert('La respuesta no puede estar vacía.')
-
-    const userId = getUserId()
-    if (!userId) {
-      window.dispatchEvent(new Event('openLoginModal'))
-      return
-    }
-
     try {
       const res = await authFetch(
         `${API_URL}/api/reviews/${reseñaId}/comentarios/${comentarioId}/responder`,
         {
           method: 'POST',
-          body: JSON.stringify({
-            usuarioId: userId,
-            texto,
-          }),
+          body: JSON.stringify({ texto, usuarioId: getUserId() }),
         }
       )
 
-      if (!res.ok) throw new Error('Error enviando respuesta')
-
       const actualizada = await res.json()
       setReseñas((prev) =>
-        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
+        prev.map((r) =>
+          r._id === actualizada._id ? mergeReseña(r, actualizada) : r
+        )
       )
       setReseniaSeleccionada(null)
     } catch (err) {
-      console.error('Error respuesta:', err)
-      alert('Hubo un problema al responder.')
+      console.error(err)
     }
   }
 
+  /* ================== VOTOS ================== */
   const votarReview = async (reviewId, voto) => {
-    const userId = getUserId()
-    if (!userId) {
-      window.dispatchEvent(new Event('openLoginModal'))
-      return
-    }
-
     try {
       const res = await authFetch(`${API_URL}/api/reviews/votar/${reviewId}`, {
         method: 'POST',
-        body: JSON.stringify({ usuarioId: userId, voto }),
+        body: JSON.stringify({ voto, usuarioId: getUserId() }),
       })
-
-      if (!res.ok) throw new Error('Error votando reseña')
 
       const actualizada = await res.json()
       setReseñas((prev) =>
-        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
+        prev.map((r) =>
+          r._id === actualizada._id ? mergeReseña(r, actualizada) : r
+        )
       )
     } catch (err) {
-      console.error('Error votando reseña:', err)
-      alert('No se pudo registrar el voto.')
+      console.error(err)
     }
   }
 
   const votarRespuesta = async (reviewId, respuestaId, voto) => {
-    const userId = getUserId()
-    if (!userId) {
-      window.dispatchEvent(new Event('openLoginModal'))
-      return
-    }
-
     try {
       const res = await authFetch(
         `${API_URL}/api/reviews/${reviewId}/respuesta/${respuestaId}/votar`,
         {
           method: 'POST',
-          body: JSON.stringify({ usuarioId: userId, voto }),
+          body: JSON.stringify({ voto, usuarioId: getUserId() }),
         }
       )
 
-      if (!res.ok) throw new Error('Error votando respuesta')
-
       const actualizada = await res.json()
       setReseñas((prev) =>
-        prev.map((r) => (r._id === actualizada._id ? actualizada : r))
+        prev.map((r) =>
+          r._id === actualizada._id ? mergeReseña(r, actualizada) : r
+        )
       )
     } catch (err) {
-      console.error('Error votando respuesta:', err)
-      alert('No se pudo registrar el voto en la respuesta.')
+      console.error(err)
     }
   }
 
   const descarga = () => {
-    navigate('/Download', {
-      state: { iframeUrl: juego.descarga },
-    })
+    navigate('/Download', { state: { iframeUrl: juego.descarga } })
   }
 
   if (loading) return <Loader imagen={tiempoCarga4} />
@@ -356,7 +224,8 @@ function InfoJuego({ setJuegos }) {
       </p>
       <div className="acciones-juego">
         <button className="btn-jugar" onClick={descarga}>
-          Jugar
+          {' '}
+          Jugar{' '}
         </button>
 
         <button
@@ -400,10 +269,10 @@ function InfoJuego({ setJuegos }) {
       </div>
 
       <FormularioResenias
-        juegoId={juego._id || juego.id}
+        juegoId={juego._id}
         usuarioId={getUserId()}
         nombreUsuario={getUserName()}
-        onReseniaEnviada={handleReseniaEnviada}
+        onReseniaEnviada={(nueva) => setReseñas((p) => [nueva, ...p])}
       />
 
       {reseñas.map((r) => (
