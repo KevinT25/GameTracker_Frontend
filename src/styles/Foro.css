@@ -284,6 +284,18 @@
   transform: rotate(90deg);
 }
 
+.btn-Usuario{
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-secondary);
+  margin: 5px;
+}
+
+.btn-Usuario:hover{
+  color: var(--color-text-primary);
+}
+
 /*----------------------REVIEW------------------------*/
 .reseña-info {
   display: flex;
@@ -601,7 +613,6 @@
   animation: fadeInScale 0.35s ease-out;
   box-shadow: var(--shadow-soft);
 }
-
 
 /* TÍTULO */
 .form-resenia-general h3 {

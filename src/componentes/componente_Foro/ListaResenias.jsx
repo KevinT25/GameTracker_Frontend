@@ -7,6 +7,8 @@ import FormularioReseniaGeneral from './FormularioGeneral'
 import tiempoCarga3 from '../../assets/loadingGif/tiempoCarga3.gif'
 import iconGrimorio from '../../assets/Icons/iconGrimorio.png'
 import iconGrimorioVacio from '../../assets/Icons/iconGrimorioVacio.png'
+import { useNavigate } from 'react-router-dom'
+
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -18,17 +20,15 @@ function ListaResenias() {
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState('')
   const [vista, setVista] = useState('juegos')
-
+  const [reseñas, setReseñas] = useState([])
   const [comentariosTexto, setComentariosTexto] = useState({})
   const [formComentarioAbierto, setFormComentarioAbierto] = useState(null)
   const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
 
   const [showFormGeneral, setShowFormGeneral] = useState(false)
   const [tipoNuevaPublicacion, setTipoNuevaPublicacion] = useState('general')
+  const navigate = useNavigate()
 
-  // =========================
-  // HELPERS
-  // =========================
   const getUserId = () => {
     const stored = localStorage.getItem('user')
     if (!stored) return null
@@ -45,13 +45,12 @@ function ListaResenias() {
           ? {
               ...actualizado,
               tipo: i.tipo,
-              juegoId: i.juegoId, // ← CLAVE
+              juegoId: i.juegoId,
             }
           : i
       )
     )
   }
-
 
   // CARGA DE DATOS
   const cargarTodo = useCallback(async () => {
@@ -85,22 +84,27 @@ function ListaResenias() {
   }, [cargarTodo])
 
   // ACCIONES
-  const crearComentario = async (reviewId) => {
-    const texto = comentariosTexto[reviewId]
+  const crearComentario = async (item) => {
+    const texto = comentariosTexto[item._id]
     if (!texto?.trim()) return
 
     const userId = getUserId()
     if (!userId) return requireLogin()
 
+    const url =
+      item.tipo === 'review'
+        ? `${API_URL}/api/reviews/${item._id}/comentarios`
+        : `${API_URL}/api/comunidad/${item._id}/comentar`
+
     try {
-      const res = await authFetch(
-        `${API_URL}/api/reviews/${reviewId}/comentarios`,
-        { method: 'POST', body: JSON.stringify({ usuarioId: userId, texto }) }
-      )
+      const res = await authFetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ texto }),
+      })
 
       if (!res.ok) throw new Error()
       actualizarItem(await res.json())
-      setComentariosTexto((s) => ({ ...s, [reviewId]: '' }))
+      setComentariosTexto((s) => ({ ...s, [item._id]: '' }))
       setFormComentarioAbierto(null)
     } catch {
       alert('Error al comentar')
@@ -141,25 +145,44 @@ function ListaResenias() {
     }
   }
 
-  const enviarRespuesta = async (reviewId, comentarioId, texto) => {
-    if (!texto.trim()) return
+  /* ================== RESPUESTAS ================== */
+  const handleEnviarRespuesta = async (item, comentarioId, texto) => {
+    if (!item || !item.tipo || !item.itemId) {
+      console.error('Respuesta mal construida:', item)
+      return
+    }
 
     const userId = getUserId()
     if (!userId) return requireLogin()
 
+    const url =
+      item.tipo === 'review'
+        ? `${API_URL}/api/reviews/${item.itemId}/comentarios/${comentarioId}/responder`
+        : `${API_URL}/api/comunidad/${item.itemId}/comentario/${comentarioId}/responder`
+
     try {
-      const res = await authFetch(
-        `${API_URL}/api/reviews/${reviewId}/comentarios/${comentarioId}/responder`,
-        { method: 'POST', body: JSON.stringify({ usuarioId: userId, texto }) }
-      )
+      const res = await authFetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ texto }),
+      })
 
       if (!res.ok) throw new Error()
+
       actualizarItem(await res.json())
       setReseniaSeleccionada(null)
-    } catch {
-      alert('Error al responder')
+    } catch (err) {
+      console.error(err)
     }
   }
+
+  //Visitar perfil
+  const visitarPerfil = (usuario) => {
+    const id = typeof usuario === 'string' ? usuario : usuario?._id
+    if (!id) return
+    navigate(`/perfil/${id}`)
+  }
+
+
 
   // FILTRADO
   const itemsFiltrados = items.filter((r) => {
@@ -240,8 +263,9 @@ function ListaResenias() {
                         ? r.juegoId?.titulo
                         : r.asunto || r.tag?.toUpperCase()}
                     </strong>
-                    <span>{r.usuarioId?.nombre || 'Anónimo'}</span>
-
+                    <button onClick={() => visitarPerfil(r.usuarioId)} className='btn-Usuario'>
+                      <span>{r.usuarioId?.nombre || 'Anónimo'}</span>
+                    </button>
                     {r.tipo === 'review' && (
                       <div className="grimorios-puntuacion">
                         {[1, 2, 3, 4, 5].map((n) => (
@@ -311,9 +335,7 @@ function ListaResenias() {
                       }
                       placeholder="Escribe un comentario..."
                     />
-                    <button onClick={() => crearComentario(r._id)}>
-                      Comentar
-                    </button>
+                    <button onClick={() => crearComentario(r)}>Comentar</button>
                   </div>
                 )}
 
@@ -350,7 +372,8 @@ function ListaResenias() {
                             <button
                               onClick={() =>
                                 setReseniaSeleccionada({
-                                  ...r,
+                                  itemId: r._id,
+                                  tipo: r.tipo,
                                   comentarioId: comentario._id,
                                 })
                               }
@@ -429,7 +452,13 @@ function ListaResenias() {
         <Respuesta
           reseña={reseniaSeleccionada}
           onClose={() => setReseniaSeleccionada(null)}
-          onEnviar={enviarRespuesta}
+          onSubmit={(texto) =>
+            handleEnviarRespuesta(
+              reseniaSeleccionada,
+              reseniaSeleccionada.comentarioId,
+              texto
+            )
+          }
         />
       )}
 

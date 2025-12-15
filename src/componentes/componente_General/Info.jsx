@@ -215,7 +215,6 @@ function InfoJuego({ setJuegos }) {
       />
       <h1>{juego.titulo}</h1>
       <p className="subtitle">{juego.descripcion}</p>
-
       <p>
         <strong>Género:</strong> {juego.genero}
       </p>
@@ -267,14 +266,12 @@ function InfoJuego({ setJuegos }) {
           />
         </button>
       </div>
-
       <FormularioResenias
         juegoId={juego._id}
         usuarioId={getUserId()}
         nombreUsuario={getUserName()}
         onReseniaEnviada={(nueva) => setReseñas((p) => [nueva, ...p])}
       />
-
       {reseñas.map((r) => (
         <div key={r._id} className="reseña-item">
           <details className="reseña-details">
@@ -468,12 +465,17 @@ function InfoJuego({ setJuegos }) {
           </details>
         </div>
       ))}
-
       {reseniaSeleccionada && (
         <Respuesta
           reseña={reseniaSeleccionada}
           onClose={() => setReseniaSeleccionada(null)}
-          onEnviar={handleEnviarRespuesta}
+          onSubmit={(texto) =>
+            handleEnviarRespuesta(
+              reseniaSeleccionada._id,
+              reseniaSeleccionada.comentarioId,
+              texto
+            )
+          }
         />
       )}
     </div>

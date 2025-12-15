@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-function Respuesta({ reseña, onClose, onSubmit }) {
+function Respuesta({ titulo, subtitulo, onClose, onSubmit }) {
   const [texto, setTexto] = useState('')
 
   useEffect(() => {
@@ -12,13 +12,12 @@ function Respuesta({ reseña, onClose, onSubmit }) {
   }, [onClose])
 
   const handleSubmit = () => {
-    if (texto.trim() === '') {
+    if (!texto.trim()) {
       alert('La respuesta no puede estar vacía.')
       return
     }
 
-    // Ahora solo enviamos el texto. El padre decide qué hacer.
-    onSubmit(texto)
+    onSubmit(texto.trim())
     setTexto('')
   }
 
@@ -29,15 +28,15 @@ function Respuesta({ reseña, onClose, onSubmit }) {
     }
   }
 
-  const nombreAutor = reseña?.usuarioId?.nombre || 'el autor'
-  const nombreJuego = reseña?.juegoId?.titulo || 'el juego'
-
+  // const nombreAutor = reseña?.usuarioId?.nombre || 'el autor' 
+  // const nombreJuego = reseña?.juegoId?.titulo || 'el juego'
 
   return (
     <div className="respuesta-modal-overlay">
       <div className="respuesta-modal-content">
         <h2>
-          Responder a {nombreAutor} sobre {nombreJuego}
+          {titulo}
+          {subtitulo && <span> {subtitulo}</span>}
         </h2>
 
         <textarea
