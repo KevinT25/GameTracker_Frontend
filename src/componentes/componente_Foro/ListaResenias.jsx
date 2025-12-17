@@ -408,11 +408,7 @@ function ListaResenias() {
                                   </strong>
 
                                   <div
-                                    style={{
-                                      display: 'flex',
-                                      gap: 8,
-                                      alignItems: 'center',
-                                    }}
+                                    className='Like'
                                   >
                                     <button
                                       onClick={() =>

@@ -78,7 +78,7 @@
   --font-ornament: 'Uncial Antiqua', serif; /* Iconos o detalles decorativos */
 
   /*Tamaños de texto*/
-  --font-size-navbar: clamp(12px, 20px, 25px);
+  --font-size-navbar: clamp(8px, 20px, 25px);
   --font-size-body: clamp(10px, 12px, 14px);
   --font-size-body-lg: clamp(1.2rem, 2rem, 2.2rem);
   --font-size-body-sh: clamp(0.5rem, 0.9rem, 1rem);
