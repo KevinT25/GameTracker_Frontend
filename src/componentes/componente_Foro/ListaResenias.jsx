@@ -9,7 +9,6 @@ import iconGrimorio from '../../assets/Icons/iconGrimorio.png'
 import iconGrimorioVacio from '../../assets/Icons/iconGrimorioVacio.png'
 import { useNavigate } from 'react-router-dom'
 
-
 const API_URL = import.meta.env.VITE_API_URL
 
 function ListaResenias() {
@@ -182,19 +181,27 @@ function ListaResenias() {
     navigate(`/perfil/${id}`)
   }
 
-
-
   // FILTRADO
-  const itemsFiltrados = items.filter((r) => {
-    const texto =
-      r.textoResenia || r.contenido || r.asunto || r.juegoId?.titulo || ''
-    if (!texto.toLowerCase().includes(filtro.toLowerCase())) return false
+  const normalizar = (v) =>
+    typeof v === 'string' ? v.toLowerCase().trim() : ''
+
+  const itemsFiltrados = items.filter((r, index) => {
+    const nombreJuego = normalizar(r.juegoId?.titulo)
+    const nombreUsuario = normalizar(r.usuarioId?.nombre)
+    const filtroBase = normalizar(filtro)
+
+    const coincideTexto =
+      nombreJuego.includes(filtroBase) || nombreUsuario.includes(filtroBase)
+
+    if (!coincideTexto) return false
+
     if (vista === 'juegos') return r.tipo === 'review'
     if (vista === 'general') return r.tag === 'general'
     if (vista === 'discusion') return r.tag === 'discusion'
     if (vista === 'pregunta') return r.tag === 'pregunta'
     if (vista === 'fanart') return r.tag === 'fanart'
     if (vista === 'bug/errores') return r.tag === 'bug/errores'
+
     return true
   })
 
@@ -263,7 +270,10 @@ function ListaResenias() {
                         ? r.juegoId?.titulo
                         : r.asunto || r.tag?.toUpperCase()}
                     </strong>
-                    <button onClick={() => visitarPerfil(r.usuarioId)} className='btn-Usuario'>
+                    <button
+                      onClick={() => visitarPerfil(r.usuarioId)}
+                      className="btn-Usuario"
+                    >
                       <span>{r.usuarioId?.nombre || 'Anónimo'}</span>
                     </button>
                     {r.tipo === 'review' && (
@@ -407,9 +417,7 @@ function ListaResenias() {
                                     {resp.usuarioId?.nombre || 'Anónimo'}
                                   </strong>
 
-                                  <div
-                                    className='Like'
-                                  >
+                                  <div className="Like">
                                     <button
                                       onClick={() =>
                                         votarRespuesta(r._id, resp._id, 1)
