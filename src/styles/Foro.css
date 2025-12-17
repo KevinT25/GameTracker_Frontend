@@ -467,6 +467,11 @@
   transition: all var(--transition-fast);
 }
 
+.btn-crear-publicacion.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .btn-crear-publicacion:hover {
   color: var(--color-text-secondary);
   box-shadow: var(--shadow-glow);
@@ -475,6 +480,22 @@
 
 .btn-crear-publicacion:active {
   transform: scale(0.97);
+}
+
+.btn-crear-icono {
+  color: var(--color-accent, #d4af37);
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Hover */
+.btn-crear-publicacion:hover .btn-crear-icono {
+  transform: scale(1.15);
+  color: var(--color-text-primary);
 }
 
 .vista-selector {
@@ -516,6 +537,13 @@
 
   border-color: var(--color-border);
   box-shadow: var(--box-shadow-card);
+}
+
+/* Mobile tweak */
+@media (max-width: 480px) {
+  .btn-crear-icono {
+    font-size: 1.8rem;
+  }
 }
 
 /* ---------------- MODAL RESPUESTA ------------------- */

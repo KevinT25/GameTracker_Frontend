@@ -215,13 +215,17 @@ function ListaResenias() {
       </header>
 
       <button
-        className="btn-crear-publicacion"
+        disabled={vista === 'juegos'}
+        className={`btn-crear-publicacion ${
+          vista === 'juegos' ? 'disabled' : ''
+        }`}
         onClick={() => {
           setTipoNuevaPublicacion(vista)
           setShowFormGeneral(true)
         }}
       >
-        ❌ Crear
+        <span className="btn-crear-icono">+</span>
+        Crear
       </button>
 
       <div className="vista-selector">
