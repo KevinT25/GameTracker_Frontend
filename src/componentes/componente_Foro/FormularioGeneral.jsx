@@ -20,7 +20,6 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
       return
     }
 
-    // Validación diferente según tipo
     if (!esFanart && contenido.trim().length < 10) {
       setMensaje('El contenido debe tener al menos 10 caracteres.')
       return
@@ -31,38 +30,19 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
       return
     }
 
-    const token = localStorage.getItem('token')
-    if (!token) {
-      setMensaje('Debes iniciar sesión para publicar.')
-      window.dispatchEvent(new Event('openLoginModal'))
-      return
-    }
-
-    setMensaje('')
     setCargando(true)
 
     try {
-      let body
-
-      if (esFanart) {
-        body = new FormData()
-        body.append('titulo', titulo)
-        body.append('tag', tipo)
-
-        imagenes.forEach((img) => {
-          body.append('imagenes', img)
-        })
-      } else {
-        body = JSON.stringify({
-          titulo,
-          contenido,
-          tag: tipo,
-        })
+      const body = {
+        titulo,
+        contenido: esFanart ? '' : contenido,
+        tag: tipo,
+        imagenes: esFanart ? imagenes.map((url) => ({ url })) : [],
       }
 
       const res = await authFetch(`${API_URL}/api/comunidad`, {
         method: 'POST',
-        body,
+        body: JSON.stringify(body),
       })
 
       const data = await res.json()
@@ -72,8 +52,8 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
       setContenido('')
       setImagenes([])
 
-      if (onPublicacionCreada) onPublicacionCreada(data)
-      if (onClose) onClose()
+      onPublicacionCreada?.(data)
+      onClose?.()
     } catch (err) {
       setMensaje(err.message)
     } finally {
@@ -115,12 +95,12 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
           {/* Subida de imágenes SOLO en fanart */}
           {esFanart && (
             <label>
-              Imágenes de fanart
+              URL de la imagen
               <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => setImagenes([...e.target.files])}
+                type="text"
+                placeholder="https://i.imgur.com/ejemplo.jpg"
+                value={imagenes[0] || ''}
+                onChange={(e) => setImagenes([e.target.value])}
               />
             </label>
           )}

@@ -337,7 +337,7 @@ function ListaResenias() {
                       {r.imagenes.map((img, index) => (
                         <img
                           key={index}
-                          src={`${API_URL}${img}`}
+                          src={img.url}
                           alt={`fanart-${index}`}
                           className="fanart-imagen"
                           loading="lazy"
