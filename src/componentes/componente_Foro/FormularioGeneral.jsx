@@ -4,10 +4,13 @@ import { authFetch } from '../../helpers/authFetch'
 function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
   const [titulo, setTitulo] = useState('')
   const [contenido, setContenido] = useState('')
+  const [imagenes, setImagenes] = useState([])
   const [mensaje, setMensaje] = useState('')
   const [cargando, setCargando] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL
+
+  const esFanart = tipo === 'fanart'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -17,8 +20,14 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
       return
     }
 
-    if (contenido.trim().length < 10) {
+    // Validación diferente según tipo
+    if (!esFanart && contenido.trim().length < 10) {
       setMensaje('El contenido debe tener al menos 10 caracteres.')
+      return
+    }
+
+    if (esFanart && imagenes.length === 0) {
+      setMensaje('Debes añadir al menos una imagen de fanart.')
       return
     }
 
@@ -33,13 +42,27 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
     setCargando(true)
 
     try {
-      const res = await authFetch(`${API_URL}/api/comunidad`, {
-        method: 'POST',
-        body: JSON.stringify({
+      let body
+
+      if (esFanart) {
+        body = new FormData()
+        body.append('titulo', titulo)
+        body.append('tag', tipo)
+
+        imagenes.forEach((img) => {
+          body.append('imagenes', img)
+        })
+      } else {
+        body = JSON.stringify({
           titulo,
           contenido,
           tag: tipo,
-        }),
+        })
+      }
+
+      const res = await authFetch(`${API_URL}/api/comunidad`, {
+        method: 'POST',
+        body,
       })
 
       const data = await res.json()
@@ -47,6 +70,7 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
 
       setTitulo('')
       setContenido('')
+      setImagenes([])
 
       if (onPublicacionCreada) onPublicacionCreada(data)
       if (onClose) onClose()
@@ -75,15 +99,31 @@ function FormularioReseniaGeneral({ tipo, onPublicacionCreada, onClose }) {
             />
           </label>
 
-          <label>
-            Contenido
-            <textarea
-              rows={4}
-              value={contenido}
-              onChange={(e) => setContenido(e.target.value)}
-              placeholder="Escribe aquí..."
-            />
-          </label>
+          {/* Contenido solo si NO es fanart */}
+          {!esFanart && (
+            <label>
+              Contenido
+              <textarea
+                rows={4}
+                value={contenido}
+                onChange={(e) => setContenido(e.target.value)}
+                placeholder="Escribe aquí..."
+              />
+            </label>
+          )}
+
+          {/* Subida de imágenes SOLO en fanart */}
+          {esFanart && (
+            <label>
+              Imágenes de fanart
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setImagenes([...e.target.files])}
+              />
+            </label>
+          )}
 
           <div className="form-resenia-acciones">
             <button

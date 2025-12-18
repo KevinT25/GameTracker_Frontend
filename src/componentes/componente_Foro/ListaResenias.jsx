@@ -328,7 +328,30 @@ function ListaResenias() {
                   </div>
                 )}
 
-                <p className="reseña-texto">{r.textoResenia || r.contenido}</p>
+                {/* FANART IMÁGENES */}
+                {r.tipo === 'publicacion' &&
+                  r.tag === 'fanart' &&
+                  Array.isArray(r.imagenes) &&
+                  r.imagenes.length > 0 && (
+                    <div className="fanart-galeria">
+                      {r.imagenes.map((img, index) => (
+                        <img
+                          key={index}
+                          src={`${API_URL}${img}`}
+                          alt={`fanart-${index}`}
+                          className="fanart-imagen"
+                          loading="lazy"
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                {/* TEXTO (no fanart o fanart sin texto) */}
+                {(r.contenido || r.textoResenia) && (
+                  <p className="reseña-texto">
+                    {r.textoResenia || r.contenido}
+                  </p>
+                )}
 
                 <button
                   className="btn-comentar"

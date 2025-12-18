@@ -319,11 +319,34 @@
 }
 
 .reseña-img {
-  width: 70px;
-  height: 90px;
-  object-fit: cover;
+  width: 200px;
+  height: 100px;
+  object-fit: fill;
   border-radius: 6px;
 }
+
+/*FANTART*/
+
+.fanart-galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.fanart-imagen {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.fanart-imagen:hover {
+  transform: scale(1.03);
+}
+
 
 /* Botón Responder + botones voto */
 .btn-responder,
