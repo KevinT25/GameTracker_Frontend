@@ -206,6 +206,40 @@ function InfoJuego({ setJuegos }) {
   if (loading) return <Loader imagen={tiempoCarga4} />
   if (!juego) return <p>No se encontró el juego.</p>
 
+  const actualizarEstado = async (juegoId, campo, valor) => {
+  try {
+    const res = await authFetch(
+      `${API_URL}/api/games/games/${juegoId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({
+          [campo]: valor,
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      throw new Error('Error al actualizar el juego')
+    }
+
+    const juegoActualizado = await res.json()
+
+    // Actualiza el juego actual
+    setJuego(juegoActualizado)
+
+    // Si existe setJuegos (lista global), actualízala también
+    if (setJuegos) {
+      setJuegos((prev) =>
+        prev.map((j) =>
+          j._id === juegoId ? juegoActualizado : j
+        )
+      )
+    }
+  } catch (error) {
+    console.error('Error actualizando estado:', error)
+  }
+}
+
   return (
     <div className="info-juego">
       <img
