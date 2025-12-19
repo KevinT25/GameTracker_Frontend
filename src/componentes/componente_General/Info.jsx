@@ -53,11 +53,39 @@ function InfoJuego({ setJuegos }) {
   const API_URL = import.meta.env.VITE_API_URL
   const usuarioLS = JSON.parse(localStorage.getItem('user') || 'null')
   const [user, setUser] = useState(usuarioLS)
+  const [uiEstado, setUiEstado] = useState(() => {
+  const guardado = localStorage.getItem(`ui-${id}`)
+  return guardado
+    ? JSON.parse(guardado)
+    : {
+        wishlist: false,
+        misjuegos: false,
+        completado: false,
+      }
+})
 
   const getUserId = () => user?._id || user?.id || null
   const getUserName = () => user?.nombre || user?.username || null
 
   /* ================== CARGA INICIAL ================== */
+  useEffect(() => {
+  localStorage.setItem(
+    `ui-${id}`,
+    JSON.stringify(uiEstado)
+  )
+}, [uiEstado, id])
+useEffect(() => {
+  const guardado = localStorage.getItem(`ui-${id}`)
+  setUiEstado(
+    guardado
+      ? JSON.parse(guardado)
+      : {
+          wishlist: false,
+          misjuegos: false,
+          completado: false,
+        }
+  )
+}, [id])
   useEffect(() => {
     let cancelled = false
     const controller = new AbortController()
