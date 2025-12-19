@@ -95,7 +95,7 @@ function Headers() {
       <nav className={`navbar ${open ? 'nav-open' : ''}`}>
         <div className="logo">
           <Link to="/" id="Logo" onClick={() => setOpen(false)}>
-            GAME VR
+            Game VR
           </Link>
         </div>
 
