@@ -207,7 +207,7 @@ function InfoJuego({ setJuegos }) {
   if (!juego) return <p>No se encontró el juego.</p>
 
   const actualizarEstado = async (juegoId, campo, valor) => {
-  // 🔥 ACTUALIZACIÓN OPTIMISTA
+  // ✅ actualización optimista
   setJuego((prev) => ({
     ...prev,
     [campo]: valor,
@@ -224,12 +224,14 @@ function InfoJuego({ setJuegos }) {
 
     if (!res.ok) throw new Error('Error backend')
 
-    const juegoActualizado = await res.json()
-    setJuego(juegoActualizado)
+    // 🚫 NO sobrescribas el estado
+    // const juegoActualizado = await res.json()
+    // setJuego(juegoActualizado)
+
   } catch (error) {
     console.error(error)
 
-    // ❌ rollback si falla
+    // rollback si falla
     setJuego((prev) => ({
       ...prev,
       [campo]: !valor,
