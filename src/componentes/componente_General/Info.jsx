@@ -207,36 +207,33 @@ function InfoJuego({ setJuegos }) {
   if (!juego) return <p>No se encontró el juego.</p>
 
   const actualizarEstado = async (juegoId, campo, valor) => {
+  // 🔥 ACTUALIZACIÓN OPTIMISTA
+  setJuego((prev) => ({
+    ...prev,
+    [campo]: valor,
+  }))
+
   try {
     const res = await authFetch(
       `${API_URL}/api/games/games/${juegoId}`,
       {
         method: 'PUT',
-        body: JSON.stringify({
-          [campo]: valor,
-        }),
+        body: JSON.stringify({ [campo]: valor }),
       }
     )
 
-    if (!res.ok) {
-      throw new Error('Error al actualizar el juego')
-    }
+    if (!res.ok) throw new Error('Error backend')
 
     const juegoActualizado = await res.json()
-
-    // Actualiza el juego actual
     setJuego(juegoActualizado)
-
-    // Si existe setJuegos (lista global), actualízala también
-    if (setJuegos) {
-      setJuegos((prev) =>
-        prev.map((j) =>
-          j._id === juegoId ? juegoActualizado : j
-        )
-      )
-    }
   } catch (error) {
-    console.error('Error actualizando estado:', error)
+    console.error(error)
+
+    // ❌ rollback si falla
+    setJuego((prev) => ({
+      ...prev,
+      [campo]: !valor,
+    }))
   }
 }
 
