@@ -1,6 +1,7 @@
 import './../../styles/Info.css'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useGameState } from '../../Hooks/useGameState'
 import { authFetch } from '../../helpers/authFetch'
 import {
   escucharEvento,
@@ -43,6 +44,7 @@ function InfoJuego({ setJuegos }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
+  const { state, toggle } = useGameState(juego._id)
   const [juego, setJuego] = useState(null)
   const [reseñas, setReseñas] = useState([])
   const [reseniaSeleccionada, setReseniaSeleccionada] = useState(null)
@@ -54,38 +56,38 @@ function InfoJuego({ setJuegos }) {
   const usuarioLS = JSON.parse(localStorage.getItem('user') || 'null')
   const [user, setUser] = useState(usuarioLS)
   const [uiEstado, setUiEstado] = useState(() => {
-  const guardado = localStorage.getItem(`ui-${id}`)
-  return guardado
-    ? JSON.parse(guardado)
-    : {
+    const guardado = localStorage.getItem(`ui-${id}`)
+    return guardado
+      ? JSON.parse(guardado)
+      : {
         wishlist: false,
         misjuegos: false,
         completado: false,
       }
-})
+  })
 
   const getUserId = () => user?._id || user?.id || null
   const getUserName = () => user?.nombre || user?.username || null
 
   /* ================== CARGA INICIAL ================== */
   useEffect(() => {
-  localStorage.setItem(
-    `ui-${id}`,
-    JSON.stringify(uiEstado)
-  )
-}, [uiEstado, id])
-useEffect(() => {
-  const guardado = localStorage.getItem(`ui-${id}`)
-  setUiEstado(
-    guardado
-      ? JSON.parse(guardado)
-      : {
+    localStorage.setItem(
+      `ui-${id}`,
+      JSON.stringify(uiEstado)
+    )
+  }, [uiEstado, id])
+  useEffect(() => {
+    const guardado = localStorage.getItem(`ui-${id}`)
+    setUiEstado(
+      guardado
+        ? JSON.parse(guardado)
+        : {
           wishlist: false,
           misjuegos: false,
           completado: false,
         }
-  )
-}, [id])
+    )
+  }, [id])
   useEffect(() => {
     let cancelled = false
     const controller = new AbortController()
@@ -235,37 +237,37 @@ useEffect(() => {
   if (!juego) return <p>No se encontró el juego.</p>
 
   const actualizarEstado = async (juegoId, campo, valor) => {
-  // ✅ actualización optimista
-  setJuego((prev) => ({
-    ...prev,
-    [campo]: valor,
-  }))
-
-  try {
-    const res = await authFetch(
-      `${API_URL}/api/games/games/${juegoId}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify({ [campo]: valor }),
-      }
-    )
-
-    if (!res.ok) throw new Error('Error backend')
-
-    // 🚫 NO sobrescribas el estado
-    // const juegoActualizado = await res.json()
-    // setJuego(juegoActualizado)
-
-  } catch (error) {
-    console.error(error)
-
-    // rollback si falla
+    // ✅ actualización optimista
     setJuego((prev) => ({
       ...prev,
-      [campo]: !valor,
+      [campo]: valor,
     }))
+
+    try {
+      const res = await authFetch(
+        `${API_URL}/api/games/games/${juegoId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ [campo]: valor }),
+        }
+      )
+
+      if (!res.ok) throw new Error('Error backend')
+
+      // 🚫 NO sobrescribas el estado
+      // const juegoActualizado = await res.json()
+      // setJuego(juegoActualizado)
+
+    } catch (error) {
+      console.error(error)
+
+      // rollback si falla
+      setJuego((prev) => ({
+        ...prev,
+        [campo]: !valor,
+      }))
+    }
   }
-}
 
   return (
     <div className="info-juego">
@@ -289,29 +291,17 @@ useEffect(() => {
         </button>
 
         <button
-          className={`mygame-boton ${juego.misjuegos ? 'activo' : ''}`}
-          onClick={() =>
-            actualizarEstado(juego._id, 'misjuegos', !juego.misjuegos)
-          }
-          data-tooltip={`${juego.misjuegos ? 'Quitar' : 'Añadir'} mis juegos`}
+          className={state.misjuegos ? 'activo' : ''}
+          onClick={() => toggle('misjuegos')}
         >
-          <img
-            src={juego.misjuegos ? iconMisJuegos : iconEliminar}
-            className="iconGames"
-          />
+          <img src={state.misjuegos ? iconMisJuegos : iconEliminar} />
         </button>
 
         <button
-          className={`mywishlist-boton ${juego.wishlist ? 'activo' : ''}`}
-          onClick={() =>
-            actualizarEstado(juego._id, 'wishlist', !juego.wishlist)
-          }
-          data-tooltip={`${juego.wishlist ? 'Quitar' : 'Añadir'} favorito`}
+          className={state.wishlist ? 'activo' : ''}
+          onClick={() => toggle('wishlist')}
         >
-          <img
-            src={juego.wishlist ? iconWishlist : iconNoWishlist}
-            className="iconGames"
-          />
+          <img src={state.wishlist ? iconWishlist : iconNoWishlist} />
         </button>
 
         <button
